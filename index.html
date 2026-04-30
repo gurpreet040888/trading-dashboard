@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Trading Alert Dashboard</title>
+    <style>
+        body { font-family: Arial; background: #0f172a; color: white; padding: 20px; }
+        input { padding: 8px; width: 400px; }
+        button { padding: 8px 12px; margin-left: 10px; }
+        table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid #334155; }
+        .green { color: #22c55e; }
+        .red { color: #ef4444; }
+    </style>
+</head>
+<body>
+
+<h2>📊 Trading Alert Dashboard</h2>
+
+<input id="stocks" value="AAPL,MSFT,RELIANCE.NS,TCS.NS,^NSEI">
+<button onclick="loadData()">Refresh</button>
+
+<table id="table">
+    <thead>
+        <tr>
+            <th>Ticker</th>
+            <th>Current</th>
+            <th>Day High</th>
+            <th>Day Low</th>
+            <th>Signals</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+const THRESHOLD = 0.10;
+
+async function fetchStock(ticker) {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=6mo&interval=1d`;
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const result = data.chart.result[0];
+    const close = result.indicators.quote[0].close;
+    const high = result.indicators.quote[0].high;
+    const low = result.indicators.quote[0].low;
+
+    let current = close[close.length - 1];
+    let todayHigh = high[high.length - 1];
+    let todayLow = low[low.length - 1];
+
+    function analyze(days) {
+        let subset = close.slice(-days);
+        let max = Math.max(...subset);
+        let min = Math.min(...subset);
+
+        let signals = [];
+
+        if ((current - max) / max >= THRESHOLD) {
+            signals.push(`🔺 ${days}d breakout`);
+        }
+        if ((current - min) / min <= -THRESHOLD) {
+            signals.push(`🔻 ${days}d dip`);
+        }
+
+        return signals;
+    }
+
+    let signals = [
+        ...analyze(7),
+        ...analyze(15),
+        ...analyze(30),
+        ...analyze(180)
+    ];
+
+    return {
+        ticker,
+        current: current.toFixed(2),
+        high: todayHigh.toFixed(2),
+        low: todayLow.toFixed(2),
+        signals: signals.join(", ") || "No alert"
+    };
+}
+
+async function loadData() {
+    const stocks = document.getElementById("stocks").value.split(",");
+    const tbody = document.querySelector("#table tbody");
+    tbody.innerHTML = "";
+
+    for (let ticker of stocks) {
+        ticker = ticker.trim();
+        if (!ticker) continue;
+
+        try {
+            let data = await fetchStock(ticker);
+
+            let row = `
+                <tr>
+                    <td>${data.ticker}</td>
+                    <td>${data.current}</td>
+                    <td>${data.high}</td>
+                    <td>${data.low}</td>
+                    <td>${data.signals.includes("🔺") ? 
+                        `<span class="green">${data.signals}</span>` : 
+                        data.signals.includes("🔻") ? 
+                        `<span class="red">${data.signals}</span>` : 
+                        data.signals}
+                    </td>
+                </tr>
+            `;
+
+            tbody.innerHTML += row;
+
+        } catch (e) {
+            console.error(ticker, e);
+        }
+    }
+}
+
+// Auto refresh every 5 minutes
+setInterval(loadData, 300000);
+
+// Load on open
+loadData();
+</script>
+
+</body>
+</html>
