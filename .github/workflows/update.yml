@@ -50,6 +50,6 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add data.json
-          git commit -m "Auto update stock data" || echo "No changes"
-          git pull --rebase origin main
-          git push
+          git commit -m "Auto update stock data" || exit 0
+          git pull --rebase origin main || true
+          git push origin HEAD:main
