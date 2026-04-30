@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Trading Dashboard</title>
+  <style>
+    body { font-family: Arial; background:#0f172a; color:white; padding:20px; }
+    table { width:100%; margin-top:20px; }
+    th, td { padding:10px; border-bottom:1px solid #333; }
+    .green { color:#22c55e; }
+    .red { color:#ef4444; }
+  </style>
+</head>
+<body>
+
+<h2>📊 Trading Dashboard</h2>
+<p id="lastUpdated"></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Ticker</th>
+      <th>Price</th>
+      <th>Day High</th>
+      <th>Day Low</th>
+      <th>Signals</th>
+    </tr>
+  </thead>
+  <tbody id="table"></tbody>
+</table>
+
+<script>
+async function loadData() {
+  const res = await fetch("data.json");
+  const data = await res.json();
+
+  const table = document.getElementById("table");
+  table.innerHTML = "";
+
+  data.forEach(d => {
+    let signalText = d.signals.join(", ");
+
+    table.innerHTML += `
+      <tr>
+        <td>${d.ticker}</td>
+        <td>${d.current}</td>
+        <td>${d.high}</td>
+        <td>${d.low}</td>
+        <td class="${signalText.includes('breakout') ? 'green' : signalText.includes('dip') ? 'red' : ''}">
+          ${signalText}
+        </td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("lastUpdated").innerText =
+    "Last updated: " + new Date().toLocaleString();
+}
+
+loadData();
+setInterval(loadData, 300000);
+</script>
+
+</body>
+</html>
