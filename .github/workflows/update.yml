@@ -27,27 +27,49 @@ jobs:
       - name: Generate stock data
         run: |
           python - <<EOF
-          import json
-          import csv
+          import json, csv
           from backend.fetch_data import analyze_stock
-   
+  
           results = []
-   
-          with open("stocks.csv", "r") as f:
-              reader = csv.reader(f)
-   
+  
+          with open("stocks.csv") as f:
+              reader = csv.DictReader(f)
+  
               for row in reader:
                   try:
-                      ticker = row[0].strip()
-                      buy_price = float(row[1])
-   
+                      ticker = row["ticker"].strip()
+                      buy_price = float(row["buy_price"])
+                      qty = float(row["quantity"])
+  
                       data = analyze_stock(ticker, buy_price)
-                      if data:
-                          results.append(data)
-   
+  
+                      if not data:
+                          continue
+  
+                      # 🔥 Add quantity-based calculations
+                      invested = buy_price * qty
+                      current_value = data["current"] * qty
+                      total_gain = current_value - invested
+  
+                      # Heat score (same logic as frontend)
+                      diff7 = (data["current"] - data["avg7"]) / data["avg7"]
+                      diff14 = (data["current"] - data["avg14"]) / data["avg14"]
+  
+                      heat = abs(diff7) + abs(diff14)
+  
+                      data.update({
+                          "quantity": qty,
+                          "invested": round(invested, 2),
+                          "current_value": round(current_value, 2),
+                          "total_gain": round(total_gain, 2),
+                          "heat": round(heat, 4)
+                      })
+  
+                      results.append(data)
+  
                   except Exception as e:
                       print("Error:", row, e)
-   
+  
           with open("data.json", "w") as f:
               json.dump(results, f)
           EOF
