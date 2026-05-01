@@ -103,6 +103,7 @@
       <th>RSI</th>
       <th>Score</th>
       <th>Reco</th>
+	  <th>Reasons</th>
       <th>PnL%</th>
       <th>Heat</th>
     </tr>
@@ -208,6 +209,9 @@ async function loadData() {
         <td class="${d.recommendation.includes('BUY') ? 'buy' : d.recommendation.includes('SELL') ? 'sell' : 'hold'}">
           ${d.recommendation}
         </td>
+		<td style="font-size:10px; text-align:left;">
+		  ${d.reasons?.map(r => `<div>• ${r}</div>`).join("") || "—"}
+		</td>
         <td class="${d.pnl > 0 ? 'positive':'negative'}">${d.pnl}%</td>
         <td>${d.heat?.toFixed(2)}</td>
       </tr>
