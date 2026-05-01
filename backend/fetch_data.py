@@ -30,7 +30,10 @@ def analyze_stock(ticker, buy_price):
     check(avg30, "30d")
 
     # 🔥 NEW: P&L vs your buy price
-    pnl_pct = ((current - buy_price) / buy_price) * 100
+    if buy_price == 0:
+        pnl = 0
+    else:
+        pnl_pct = ((current - buy_price) / buy_price) * 100
 
     return {
         "ticker": ticker,

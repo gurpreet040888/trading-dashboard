@@ -178,7 +178,7 @@ async function loadData() {
         <td class="${pnlClass}">
           ₹ ${d.total_gain.toFixed(0)}
           <br>
-          <small>${d.pnl}%</small>
+          <small>${d.buy_price == 0 ? "N/A" : d.pnl.toFixed(2) + "%"}</small>
         </td>
 
         ${formatCell(d.avg7, d.diff7)}
