@@ -119,5 +119,6 @@ def analyze_stock(ticker, buy_price):
         "rsi": rsi_value,
         "ai_score": score,
         "recommendation": recommendation,
-        "reasons": reasons or ["Neutral"]
+        "reasons": reasons or ["Neutral"],
+        "history": close.tail(30).round(2).tolist()
     }
