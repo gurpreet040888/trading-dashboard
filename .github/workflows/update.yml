@@ -24,33 +24,33 @@ jobs:
       - name: Install dependencies
         run: pip install yfinance
 
-    - name: Generate stock data
-      run: |
-        python - <<EOF
-        import json
-        import csv
-        from backend.fetch_data import analyze_stock
-
-        results = []
-
-        with open("stocks.csv", "r") as f:
-            reader = csv.reader(f)
-
-            for row in reader:
-                try:
-                    ticker = row[0].strip()
-                    buy_price = float(row[1])
-
-                    data = analyze_stock(ticker, buy_price)
-                    if data:
-                        results.append(data)
-
-                except Exception as e:
-                    print("Error:", row, e)
-
-        with open("data.json", "w") as f:
-            json.dump(results, f)
-        EOF
+      - name: Generate stock data
+        run: |
+          python - <<EOF
+          import json
+          import csv
+          from backend.fetch_data import analyze_stock
+   
+          results = []
+   
+          with open("stocks.csv", "r") as f:
+              reader = csv.reader(f)
+   
+              for row in reader:
+                  try:
+                      ticker = row[0].strip()
+                      buy_price = float(row[1])
+   
+                      data = analyze_stock(ticker, buy_price)
+                      if data:
+                          results.append(data)
+   
+                  except Exception as e:
+                      print("Error:", row, e)
+   
+          with open("data.json", "w") as f:
+              json.dump(results, f)
+          EOF
 
       - name: Commit and push
         run: |
