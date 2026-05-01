@@ -31,7 +31,7 @@ def analyze_stock(ticker, buy_price):
 
     # 🔥 NEW: P&L vs your buy price
     if buy_price == 0:
-        pnl = 0
+        pnl_pct = 0
     else:
         pnl_pct = ((current - buy_price) / buy_price) * 100
 
