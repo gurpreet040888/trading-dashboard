@@ -60,7 +60,6 @@
     .positive { color: #22c55e; }
     .negative { color: #ef4444; }
 
-    /* 🔥 Avg cell styling */
     .avg-cell {
       padding: 5px;
       border-radius: 6px;
@@ -76,6 +75,32 @@
       opacity: 0.9;
     }
 
+    .portfolio-box {
+      margin-top:40px;
+      background:#0f172a;
+      padding:20px;
+      border-radius:10px;
+    }
+
+    .portfolio-grid {
+      display:flex;
+      gap:30px;
+      flex-wrap:wrap;
+      margin-top:15px;
+    }
+
+    .portfolio-item {
+      min-width:150px;
+    }
+
+    .label {
+      font-size:12px;
+      opacity:0.7;
+    }
+
+    .value {
+      font-size:18px;
+    }
   </style>
 </head>
 
@@ -124,13 +149,44 @@
   <tbody id="mainTable"></tbody>
 </table>
 
+<!-- PORTFOLIO SUMMARY -->
+<div class="portfolio-box">
+  <h3>💼 Portfolio Summary</h3>
+
+  <div class="portfolio-grid">
+    <div class="portfolio-item">
+      <div class="label">Total Invested</div>
+      <div id="totalInvested" class="value">₹0</div>
+    </div>
+
+    <div class="portfolio-item">
+      <div class="label">Current Value</div>
+      <div id="currentValue" class="value">₹0</div>
+    </div>
+
+    <div class="portfolio-item">
+      <div class="label">Total Gain/Loss</div>
+      <div id="totalGain" class="value">₹0</div>
+    </div>
+
+    <div class="portfolio-item">
+      <div class="label">Return %</div>
+      <div id="returnPct" class="value">0%</div>
+    </div>
+
+    <div class="portfolio-item">
+      <div class="label">Total Stocks</div>
+      <div id="totalStocks" class="value">0</div>
+    </div>
+  </div>
+</div>
+
 <script>
 
 function pct(curr, avg) {
   return ((curr - avg) / avg * 100).toFixed(1);
 }
 
-/* 🔥 Gradient avg cell */
 function formatAvgCell(avg, pctVal) {
   const val = parseFloat(pctVal);
   const intensity = Math.min(Math.abs(val) / 10, 1);
@@ -170,10 +226,7 @@ function createChart(id, data) {
     },
     options: {
       plugins: { legend: { display: false }},
-      scales: {
-        x: { display: false },
-        y: { display: false }
-      }
+      scales: { x: { display: false }, y: { display: false } }
     }
   });
 }
@@ -183,6 +236,42 @@ async function loadData() {
   const res = await fetch("./data.json?t=" + Date.now());
   const data = await res.json();
 
+  // Portfolio calculation
+  let totalInvested = 0;
+  let totalCurrent = 0;
+  let totalGain = 0;
+
+  data.forEach(d => {
+    const qty = d.quantity || 1;
+    const buy = d.buy_price || 0;
+    const current = d.current || 0;
+
+    const invested = buy * qty;
+    const currentVal = current * qty;
+
+    totalInvested += invested;
+    totalCurrent += currentVal;
+    totalGain += (currentVal - invested);
+  });
+
+  const returnPct = totalInvested > 0
+    ? ((totalGain / totalInvested) * 100).toFixed(2)
+    : 0;
+
+  document.getElementById("totalInvested").innerText = `₹ ${totalInvested.toFixed(0)}`;
+  document.getElementById("currentValue").innerText = `₹ ${totalCurrent.toFixed(0)}`;
+
+  const gainEl = document.getElementById("totalGain");
+  gainEl.innerText = `₹ ${totalGain.toFixed(0)}`;
+  gainEl.style.color = totalGain >= 0 ? "#22c55e" : "#ef4444";
+
+  const returnEl = document.getElementById("returnPct");
+  returnEl.innerText = `${returnPct}%`;
+  returnEl.style.color = returnPct >= 0 ? "#22c55e" : "#ef4444";
+
+  document.getElementById("totalStocks").innerText = data.length;
+
+  // ranking
   data.forEach(d => {
     d.opportunity = (d.ai_score || 0) * 2 + (d.heat || 0) * 10;
   });
@@ -193,19 +282,13 @@ async function loadData() {
   const sells = data.filter(d => d.ai_score <= -1).sort((a,b)=>a.ai_score-b.ai_score);
 
   document.getElementById("top5").innerHTML =
-    sorted.slice(0,5).map(d => `
-      <tr><td>${d.ticker}</td><td>${d.current}</td><td>${d.ai_score}</td></tr>
-    `).join("");
+    sorted.slice(0,5).map(d => `<tr><td>${d.ticker}</td><td>${d.current}</td><td>${d.ai_score}</td></tr>`).join("");
 
   document.getElementById("topBuy").innerHTML =
-    buys.slice(0,5).map(d => `
-      <tr><td>${d.ticker}</td><td class="buy">${d.ai_score}</td></tr>
-    `).join("");
+    buys.slice(0,5).map(d => `<tr><td>${d.ticker}</td><td class="buy">${d.ai_score}</td></tr>`).join("");
 
   document.getElementById("topSell").innerHTML =
-    sells.slice(0,5).map(d => `
-      <tr><td>${d.ticker}</td><td class="sell">${d.ai_score}</td></tr>
-    `).join("");
+    sells.slice(0,5).map(d => `<tr><td>${d.ticker}</td><td class="sell">${d.ai_score}</td></tr>`).join("");
 
   document.getElementById("mainTable").innerHTML =
     sorted.map((d, i) => {
@@ -239,8 +322,7 @@ async function loadData() {
 
         <td class="${d.pnl > 0 ? 'positive':'negative'}">${d.pnl}%</td>
         <td>${d.heat?.toFixed(2)}</td>
-      </tr>
-      `;
+      </tr>`;
     }).join("");
 
   setTimeout(() => {
