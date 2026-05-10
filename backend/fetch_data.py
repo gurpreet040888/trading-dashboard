@@ -1,7 +1,21 @@
 import yfinance as yf
 import numpy as np
-
+import math
 THRESHOLD = 0.10
+
+def safe(value, default=0):
+    try:
+        if value is None:
+            return default
+
+        if isinstance(value, float):
+            if math.isnan(value) or math.isinf(value):
+                return default
+
+        return round(float(value), 2)
+
+    except:
+        return default
 
 def analyze_stock(ticker, buy_price):
     df = yf.Ticker(ticker).history(period="2mo", interval="1d")
@@ -12,13 +26,16 @@ def analyze_stock(ticker, buy_price):
     close = df["Close"]
     current = close.iloc[-1]
 
-    avg7 = close.tail(7).mean()
-    avg14 = close.tail(14).mean()
-    avg30 = close.tail(30).mean()
+    avg7 = safe(close.tail(7).mean())
+    avg14 = safe(close.tail(14).mean())
+    avg30 = safe(close.tail(30).mean())
 
     signals = []
 
     def check(avg, label):
+        if avg == 0 or avg is None:
+            return
+
         diff = (current - avg) / avg
 
         if diff >= THRESHOLD:
@@ -108,11 +125,11 @@ def analyze_stock(ticker, buy_price):
     return {
         "ticker": ticker,
         "buy_price": buy_price,
-        "current": round(current, 2),
-        "avg7": round(avg7, 2),
-        "avg14": round(avg14, 2),
-        "avg30": round(avg30, 2),
-        "pnl": round(pnl_pct, 2),
+        "current": safe(current),
+        "avg7": safe(avg7),
+        "avg14": safe(avg14),
+        "avg30": safe(avg30),
+        "pnl": safe(pnl_pct),
         "signals": signals or ["No signal"],
 
         # 🔥 NEW FIELDS (used in ai.html)
