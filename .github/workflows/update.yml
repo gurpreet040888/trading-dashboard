@@ -22,7 +22,7 @@ jobs:
           python-version: "3.10"
 
       - name: Install dependencies
-        run: pip install yfinance
+        run: pip install yfinance pandas requests feedparser
 
       - name: Generate stock data
         run: |
@@ -74,11 +74,16 @@ jobs:
               json.dump(results, f)
           EOF
 
+      - name: Run AI News Scanner
+        run: |
+          python backend/news_scanner.py
+
       - name: Commit and push
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add data.json
+          git add news_data.json
           git commit -m "Auto update stock data" || exit 0
           git pull --rebase origin main || true
           git push origin HEAD:main

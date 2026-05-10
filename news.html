@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<tr>
+<th>Ticker</th>
+<th>Chart</th>
+<th>Price</th>
+<th>1D %</th>
+<th>Momentum</th>
+<th>Volume Spike</th>
+<th>AI Score</th>
+<th>Signal</th>
+<th>Reasons</th>
+<th>Top News</th>
+</tr>
+</thead>
+<tbody id="table"></tbody>
+</table>
+</div>
+
+<script>
+
+async function load(){
+
+  const res = await fetch('./news_data.json?t='+Date.now())
+  const data = await res.json()
+
+  document.getElementById('table').innerHTML = data.map((d,i)=>`
+
+    <tr>
+      <td>${d.ticker}</td>
+      <td><canvas id="c${i}"></canvas></td>
+      <td>${d.current}</td>
+      <td>${d.change_pct}%</td>
+      <td>${d.momentum}%</td>
+      <td>${d.volume_spike ? 'YES' : 'NO'}</td>
+      <td>${d.score}</td>
+      <td>${d.signal}</td>
+      <td>${d.reasons.join(', ')}</td>
+      <td style="text-align:left;font-size:11px;">
+        ${d.news.map(n=>`<div style="margin-bottom:6px;">• <a href="${n.link}" target="_blank" style="color:#38bdf8">${n.title}</a></div>`).join('')}
+      </td>
+    </tr>
+
+  `).join('')
+
+  setTimeout(()=>{
+    data.forEach((d,i)=>{
+      new Chart(document.getElementById(`c${i}`),{
+        type:'line',
+        data:{
+          labels:d.history.map((_,i)=>i),
+          datasets:[{
+            data:d.history,
+            borderWidth:1,
+            pointRadius:0
+          }]
+        },
+        options:{
+          plugins:{legend:{display:false}},
+          scales:{x:{display:false},y:{display:false}}
+        }
+      })
+    })
+  },200)
+}
+
+load()
+setInterval(load, 300000)
+
+</script>
+
+</body>
+</html>
