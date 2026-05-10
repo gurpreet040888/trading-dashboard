@@ -1,70 +1,578 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>AI Market Radar</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    padding:20px;
+    background:#020617;
+    color:white;
+    font-family:Arial,sans-serif;
+}
+
+h1{
+    margin-bottom:8px;
+}
+
+.subtitle{
+    color:#94a3b8;
+    margin-bottom:20px;
+}
+
+.search-bar{
+    display:flex;
+    gap:12px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
+}
+
+.search-bar input,
+.search-bar select{
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #334155;
+    background:#0f172a;
+    color:white;
+}
+
+.search-bar input{
+    flex:1;
+}
+
+.summary-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:16px;
+    margin-bottom:24px;
+}
+
+.card{
+    background:#0f172a;
+    border:1px solid #334155;
+    border-radius:16px;
+    padding:16px;
+}
+
+.card h3{
+    margin-top:0;
+    margin-bottom:14px;
+}
+
+.stock-pill{
+    background:#1e293b;
+    padding:10px;
+    border-radius:10px;
+    margin-bottom:8px;
+    font-size:13px;
+}
+
+.table-container{
+    overflow:auto;
+    border-radius:16px;
+    border:1px solid #334155;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:#0f172a;
+}
+
+th{
+    position:sticky;
+    top:0;
+    z-index:10;
+    background:#111827;
+    color:white;
+    padding:12px;
+    font-size:12px;
+    white-space:nowrap;
+    border-bottom:1px solid #334155;
+}
+
+td{
+    padding:10px;
+    border-bottom:1px solid #1e293b;
+    text-align:center;
+    font-size:12px;
+    vertical-align:top;
+}
+
+tr:hover{
+    background:#172033;
+}
+
+.green{
+    color:#22c55e;
+    font-weight:bold;
+}
+
+.red{
+    color:#ef4444;
+    font-weight:bold;
+}
+
+.yellow{
+    color:#facc15;
+    font-weight:bold;
+}
+
+.label{
+    display:inline-block;
+    background:#1e293b;
+    border-radius:6px;
+    padding:4px 8px;
+    margin:2px;
+    font-size:10px;
+}
+
+.news-item{
+    text-align:left;
+    margin-bottom:10px;
+}
+
+.news-item a{
+    color:#38bdf8;
+    text-decoration:none;
+}
+
+.news-item a:hover{
+    text-decoration:underline;
+}
+
+canvas{
+    width:140px !important;
+    height:50px !important;
+}
+
+.score{
+    font-size:16px;
+    font-weight:bold;
+}
+
+.footer-summary{
+    margin-top:24px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:16px;
+}
+
+.footer-card{
+    background:#0f172a;
+    border:1px solid #334155;
+    border-radius:16px;
+    padding:16px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>🚀 AI Market Radar</h1>
+
+<div class="subtitle">
+AI-powered market scanner for US + Indian stocks.
+Tracks earnings, AI momentum, breakouts, acquisition news,
+volume spikes and institutional buying trends.
+</div>
+
+<div class="search-bar">
+
+<input
+    type="text"
+    id="search"
+    placeholder="Search ticker..."
+/>
+
+<select id="signalFilter">
+    <option value="ALL">All Signals</option>
+    <option value="BUY">BUY</option>
+    <option value="SELL">SELL</option>
+    <option value="WATCH">WATCH</option>
+</select>
+
+<select id="sortBy">
+    <option value="score">Sort By Score</option>
+    <option value="momentum">Sort By Momentum</option>
+    <option value="trend_strength">Sort By Trend</option>
+    <option value="change_pct">Sort By 1D%</option>
+</select>
+
+</div>
+
+<div class="summary-grid">
+
+<div class="card">
+<h3>🔥 Top Opportunities</h3>
+<div id="top-opportunities"></div>
+</div>
+
+<div class="card">
+<h3>🟢 Buy Opportunities</h3>
+<div id="top-buy"></div>
+</div>
+
+<div class="card">
+<h3>🔴 Sell / Overheated</h3>
+<div id="top-sell"></div>
+</div>
+
+</div>
+
+<div class="table-container">
+
+<table>
+
+<thead>
+
 <tr>
+
 <th>Ticker</th>
 <th>Chart</th>
 <th>Price</th>
-<th>1D %</th>
+<th>1D%</th>
 <th>Momentum</th>
-<th>Volume Spike</th>
+<th>Trend</th>
+<th>Volume</th>
 <th>AI Score</th>
 <th>Signal</th>
+<th>Labels</th>
 <th>Reasons</th>
-<th>Top News</th>
+<th>News</th>
+
 </tr>
+
 </thead>
-<tbody id="table"></tbody>
+
+<tbody id="table-body"></tbody>
+
 </table>
+
+</div>
+
+<div class="footer-summary">
+
+<div class="footer-card">
+<h3>Total Stocks</h3>
+<div id="total-stocks">0</div>
+</div>
+
+<div class="footer-card">
+<h3>BUY Signals</h3>
+<div id="buy-count">0</div>
+</div>
+
+<div class="footer-card">
+<h3>SELL Signals</h3>
+<div id="sell-count">0</div>
+</div>
+
+<div class="footer-card">
+<h3>WATCH Signals</h3>
+<div id="watch-count">0</div>
+</div>
+
 </div>
 
 <script>
 
-async function load(){
+let ALL_DATA = [];
 
-  const res = await fetch('./news_data.json?t='+Date.now())
-  const data = await res.json()
+function getColorClass(v){
 
-  document.getElementById('table').innerHTML = data.map((d,i)=>`
+    if(v > 0) return "green";
+    if(v < 0) return "red";
 
-    <tr>
-      <td>${d.ticker}</td>
-      <td><canvas id="c${i}"></canvas></td>
-      <td>${d.current}</td>
-      <td>${d.change_pct}%</td>
-      <td>${d.momentum}%</td>
-      <td>${d.volume_spike ? 'YES' : 'NO'}</td>
-      <td>${d.score}</td>
-      <td>${d.signal}</td>
-      <td>${d.reasons.join(', ')}</td>
-      <td style="text-align:left;font-size:11px;">
-        ${d.news.map(n=>`<div style="margin-bottom:6px;">• <a href="${n.link}" target="_blank" style="color:#38bdf8">${n.title}</a></div>`).join('')}
-      </td>
-    </tr>
-
-  `).join('')
-
-  setTimeout(()=>{
-    data.forEach((d,i)=>{
-      new Chart(document.getElementById(`c${i}`),{
-        type:'line',
-        data:{
-          labels:d.history.map((_,i)=>i),
-          datasets:[{
-            data:d.history,
-            borderWidth:1,
-            pointRadius:0
-          }]
-        },
-        options:{
-          plugins:{legend:{display:false}},
-          scales:{x:{display:false},y:{display:false}}
-        }
-      })
-    })
-  },200)
+    return "yellow";
 }
 
-load()
-setInterval(load, 300000)
+function createPill(text){
+
+    return `
+        <div class="stock-pill">
+            ${text}
+        </div>
+    `;
+}
+
+async function loadData(){
+
+    try{
+
+        const response = await fetch(
+            "./news_data.json?t=" + Date.now()
+        );
+
+        const data = await response.json();
+
+        ALL_DATA = data;
+
+        applyFilters();
+
+    }catch(err){
+
+        console.error(err);
+
+        alert("Failed to load news_data.json");
+    }
+}
+
+function applyFilters(){
+
+    const search = document
+        .getElementById("search")
+        .value
+        .toLowerCase();
+
+    const signal = document
+        .getElementById("signalFilter")
+        .value;
+
+    const sortBy = document
+        .getElementById("sortBy")
+        .value;
+
+    let filtered = [...ALL_DATA];
+
+    if(search){
+
+        filtered = filtered.filter(x =>
+            x.ticker.toLowerCase().includes(search)
+        );
+    }
+
+    if(signal !== "ALL"){
+
+        filtered = filtered.filter(x =>
+            x.signal === signal
+        );
+    }
+
+    filtered.sort((a,b)=>
+        b[sortBy] - a[sortBy]
+    );
+
+    renderDashboard(filtered);
+}
+
+function renderDashboard(data){
+
+    renderSummary(data);
+
+    renderTable(data);
+
+    renderFooter(data);
+}
+
+function renderSummary(data){
+
+    const top5 = data.slice(0,5);
+
+    document.getElementById("top-opportunities").innerHTML =
+        top5.map(x =>
+            createPill(
+                `${x.ticker} | Score ${x.score}`
+            )
+        ).join("");
+
+    const buy = data
+        .filter(x => x.signal === "BUY")
+        .slice(0,5);
+
+    document.getElementById("top-buy").innerHTML =
+        buy.map(x =>
+            createPill(
+                `${x.ticker} | ${x.momentum}%`
+            )
+        ).join("");
+
+    const sell = data
+        .filter(x => x.signal === "SELL")
+        .slice(0,5);
+
+    document.getElementById("top-sell").innerHTML =
+        sell.map(x =>
+            createPill(
+                `${x.ticker} | ${x.momentum}%`
+            )
+        ).join("");
+}
+
+function renderFooter(data){
+
+    document.getElementById("total-stocks").innerHTML =
+        data.length;
+
+    document.getElementById("buy-count").innerHTML =
+        data.filter(x => x.signal==="BUY").length;
+
+    document.getElementById("sell-count").innerHTML =
+        data.filter(x => x.signal==="SELL").length;
+
+    document.getElementById("watch-count").innerHTML =
+        data.filter(x => x.signal==="WATCH").length;
+}
+
+function renderTable(data){
+
+    const tbody = document.getElementById("table-body");
+
+    tbody.innerHTML = data.map((stock,index)=>`
+
+<tr>
+
+<td>
+<b>${stock.ticker}</b>
+</td>
+
+<td>
+<canvas id="chart${index}"></canvas>
+</td>
+
+<td>
+${stock.current}
+</td>
+
+<td class="${getColorClass(stock.change_pct)}">
+${stock.change_pct}%
+</td>
+
+<td class="${getColorClass(stock.momentum)}">
+${stock.momentum}%
+</td>
+
+<td class="${getColorClass(stock.trend_strength)}">
+${stock.trend_strength}%
+</td>
+
+<td>
+${stock.volume_spike ? "🔥 YES" : "NO"}
+</td>
+
+<td>
+<div class="score">
+${stock.score}
+</div>
+</td>
+
+<td>
+${stock.signal}
+</td>
+
+<td>
+${stock.labels.map(l=>
+`
+<span class="label">
+${l}
+</span>
+`
+).join("")}
+</td>
+
+<td style="text-align:left;">
+${stock.reasons.join(", ")}
+</td>
+
+<td>
+
+${stock.news.map(n=>`
+
+<div class="news-item">
+
+<a href="${n.link}" target="_blank">
+
+${n.title}
+
+</a>
+
+</div>
+
+`).join("")}
+
+</td>
+
+</tr>
+
+`).join("");
+
+    setTimeout(()=>{
+
+        data.forEach((stock,index)=>{
+
+            const canvas =
+                document.getElementById(`chart${index}`);
+
+            if(!canvas) return;
+
+            new Chart(canvas,{
+
+                type:"line",
+
+                data:{
+                    labels:stock.history.map((_,i)=>i),
+                    datasets:[{
+                        data:stock.history,
+                        borderWidth:2,
+                        pointRadius:0,
+                        tension:0.3
+                    }]
+                },
+
+                options:{
+
+                    responsive:false,
+
+                    plugins:{
+                        legend:{
+                            display:false
+                        }
+                    },
+
+                    scales:{
+                        x:{
+                            display:false
+                        },
+                        y:{
+                            display:false
+                        }
+                    }
+                }
+            });
+        });
+
+    },100);
+}
+
+document
+.getElementById("search")
+.addEventListener("input",applyFilters);
+
+document
+.getElementById("signalFilter")
+.addEventListener("change",applyFilters);
+
+document
+.getElementById("sortBy")
+.addEventListener("change",applyFilters);
+
+loadData();
+
+setInterval(loadData,300000);
 
 </script>
 

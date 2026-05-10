@@ -22,7 +22,7 @@ jobs:
           python-version: "3.10"
 
       - name: Install dependencies
-        run: pip install yfinance pandas requests feedparser
+        run: pip install yfinance pandas numpy requests feedparser
 
       - name: Generate stock data
         run: |
@@ -74,9 +74,10 @@ jobs:
               json.dump(results, f, allow_nan=False)
           EOF
 
-      - name: Run AI News Scanner
+      - name: Run AI Market Radar
         run: |
-          python backend/news_scanner.py
+          cd backend
+          python news_scanner.py
 
       - name: Commit and push
         run: |
