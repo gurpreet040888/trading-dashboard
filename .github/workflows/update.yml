@@ -74,17 +74,12 @@ jobs:
               json.dump(results, f, allow_nan=False)
           EOF
 
-      - name: Run AI Market Radar
-        run: |
-          cd backend
-          python news_scanner.py
 
       - name: Commit and push
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add data.json
-          git add news_data.json
           git commit -m "Auto update stock data" || exit 0
           git pull --rebase origin main || true
           git push origin HEAD:main
