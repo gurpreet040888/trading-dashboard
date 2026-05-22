@@ -50,7 +50,7 @@ INDIA_STOCKS = [
     "KFINTECH.NS",
     "BSE.NS",
     "POLICYBZR.NS",
-    "ZOMATO.NS"
+    "ETERNAL.NS"
 ]
 
 WATCHLIST = US_STOCKS + INDIA_STOCKS
@@ -175,6 +175,10 @@ def analyze_stock(ticker):
 
         df = stock.history(period="3mo")
 
+        if df is None or df.empty:
+            print(f"Skipping invalid ticker: {ticker}")
+            return None
+
         if df.empty:
             return None
 
@@ -230,7 +234,7 @@ def analyze_stock(ticker):
 
         try:
 
-            volume_spike = (
+            volume_spike = bool(
                 volume.iloc[-1] > avg_volume * 1.5
             )
 
@@ -376,8 +380,19 @@ results = sorted(
 
 with open("../news_data.json", "w") as f:
 
+    clean_results = []
+
+    for item in results:
+
+        try:
+            json.dumps(item)
+            clean_results.append(item)
+
+        except Exception as e:
+            print("Skipping bad item:", e)
+
     json.dump(
-        results,
+        clean_results,
         f,
         allow_nan=False
     )
