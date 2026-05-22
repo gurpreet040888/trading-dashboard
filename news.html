@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
 <meta charset="UTF-8" />
@@ -24,7 +25,7 @@ body{
 }
 
 h1{
-    margin-bottom:8px;
+    margin-bottom:5px;
 }
 
 .subtitle{
@@ -32,15 +33,15 @@ h1{
     margin-bottom:20px;
 }
 
-.search-bar{
+.controls{
     display:flex;
     gap:12px;
-    margin-bottom:20px;
     flex-wrap:wrap;
+    margin-bottom:20px;
 }
 
-.search-bar input,
-.search-bar select{
+.controls input,
+.controls select{
     padding:12px;
     border-radius:10px;
     border:1px solid #334155;
@@ -48,13 +49,13 @@ h1{
     color:white;
 }
 
-.search-bar input{
+.controls input{
     flex:1;
 }
 
-.summary-grid{
+.top-sections{
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
     gap:16px;
     margin-bottom:24px;
 }
@@ -68,13 +69,13 @@ h1{
 
 .card h3{
     margin-top:0;
-    margin-bottom:14px;
+    margin-bottom:16px;
 }
 
 .stock-pill{
     background:#1e293b;
-    padding:10px;
     border-radius:10px;
+    padding:10px;
     margin-bottom:8px;
     font-size:13px;
 }
@@ -96,11 +97,10 @@ th{
     top:0;
     z-index:10;
     background:#111827;
-    color:white;
     padding:12px;
+    border-bottom:1px solid #334155;
     font-size:12px;
     white-space:nowrap;
-    border-bottom:1px solid #334155;
 }
 
 td{
@@ -130,32 +130,40 @@ tr:hover{
     font-weight:bold;
 }
 
+.signal-buy{
+    color:#22c55e;
+    font-weight:bold;
+}
+
+.signal-sell{
+    color:#ef4444;
+    font-weight:bold;
+}
+
+.signal-watch{
+    color:#facc15;
+    font-weight:bold;
+}
+
 .label{
     display:inline-block;
+    padding:4px 8px;
     background:#1e293b;
     border-radius:6px;
-    padding:4px 8px;
     margin:2px;
     font-size:10px;
 }
 
-.news-item{
+.news-link{
+    display:block;
+    margin-bottom:8px;
     text-align:left;
-    margin-bottom:10px;
-}
-
-.news-item a{
     color:#38bdf8;
     text-decoration:none;
 }
 
-.news-item a:hover{
+.news-link:hover{
     text-decoration:underline;
-}
-
-canvas{
-    width:140px !important;
-    height:50px !important;
 }
 
 .score{
@@ -163,11 +171,16 @@ canvas{
     font-weight:bold;
 }
 
-.footer-summary{
-    margin-top:24px;
+canvas{
+    width:120px !important;
+    height:45px !important;
+}
+
+.footer-grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
     gap:16px;
+    margin-top:24px;
 }
 
 .footer-card{
@@ -186,16 +199,15 @@ canvas{
 <h1>🚀 AI Market Radar</h1>
 
 <div class="subtitle">
-AI-powered market scanner for US + Indian stocks.
-Tracks earnings, AI momentum, breakouts, acquisition news,
-volume spikes and institutional buying trends.
+Tracks trending Indian + US stocks using momentum, volume,
+earnings news, acquisitions, AI themes and technical breakouts.
 </div>
 
-<div class="search-bar">
+<div class="controls">
 
 <input
     type="text"
-    id="search"
+    id="searchBox"
     placeholder="Search ticker..."
 />
 
@@ -210,26 +222,26 @@ volume spikes and institutional buying trends.
     <option value="score">Sort By Score</option>
     <option value="momentum">Sort By Momentum</option>
     <option value="trend_strength">Sort By Trend</option>
-    <option value="change_pct">Sort By 1D%</option>
+    <option value="change_pct">Sort By Daily %</option>
 </select>
 
 </div>
 
-<div class="summary-grid">
+<div class="top-sections">
 
 <div class="card">
-<h3>🔥 Top Opportunities</h3>
-<div id="top-opportunities"></div>
+<h3>🔥 Top 5 Opportunities</h3>
+<div id="top5"></div>
 </div>
 
 <div class="card">
-<h3>🟢 Buy Opportunities</h3>
-<div id="top-buy"></div>
+<h3>🟢 Best Buy Setups</h3>
+<div id="buySection"></div>
 </div>
 
 <div class="card">
-<h3>🔴 Sell / Overheated</h3>
-<div id="top-sell"></div>
+<h3>🔴 Overheated / Sell</h3>
+<div id="sellSection"></div>
 </div>
 
 </div>
@@ -243,48 +255,48 @@ volume spikes and institutional buying trends.
 <tr>
 
 <th>Ticker</th>
-<th>Chart</th>
+<th>Mini Chart</th>
 <th>Price</th>
 <th>1D%</th>
 <th>Momentum</th>
 <th>Trend</th>
-<th>Volume</th>
+<th>Volume Spike</th>
 <th>AI Score</th>
 <th>Signal</th>
-<th>Labels</th>
 <th>Reasons</th>
+<th>Labels</th>
 <th>News</th>
 
 </tr>
 
 </thead>
 
-<tbody id="table-body"></tbody>
+<tbody id="tableBody"></tbody>
 
 </table>
 
 </div>
 
-<div class="footer-summary">
+<div class="footer-grid">
 
 <div class="footer-card">
 <h3>Total Stocks</h3>
-<div id="total-stocks">0</div>
+<div id="totalStocks">0</div>
 </div>
 
 <div class="footer-card">
 <h3>BUY Signals</h3>
-<div id="buy-count">0</div>
+<div id="buyCount">0</div>
 </div>
 
 <div class="footer-card">
 <h3>SELL Signals</h3>
-<div id="sell-count">0</div>
+<div id="sellCount">0</div>
 </div>
 
 <div class="footer-card">
 <h3>WATCH Signals</h3>
-<div id="watch-count">0</div>
+<div id="watchCount">0</div>
 </div>
 
 </div>
@@ -301,13 +313,12 @@ function getColorClass(v){
     return "yellow";
 }
 
-function createPill(text){
+function signalClass(signal){
 
-    return `
-        <div class="stock-pill">
-            ${text}
-        </div>
-    `;
+    if(signal === "BUY") return "signal-buy";
+    if(signal === "SELL") return "signal-sell";
+
+    return "signal-watch";
 }
 
 async function loadData(){
@@ -318,9 +329,7 @@ async function loadData(){
             "./news_data.json?t=" + Date.now()
         );
 
-        const data = await response.json();
-
-        ALL_DATA = data;
+        ALL_DATA = await response.json();
 
         applyFilters();
 
@@ -335,7 +344,7 @@ async function loadData(){
 function applyFilters(){
 
     const search = document
-        .getElementById("search")
+        .getElementById("searchBox")
         .value
         .toLowerCase();
 
@@ -364,7 +373,7 @@ function applyFilters(){
     }
 
     filtered.sort((a,b)=>
-        b[sortBy] - a[sortBy]
+        (b[sortBy] || 0) - (a[sortBy] || 0)
     );
 
     renderDashboard(filtered);
@@ -372,65 +381,69 @@ function applyFilters(){
 
 function renderDashboard(data){
 
-    renderSummary(data);
+    renderTopSections(data);
 
     renderTable(data);
 
     renderFooter(data);
 }
 
-function renderSummary(data){
+function renderTopSections(data){
 
     const top5 = data.slice(0,5);
 
-    document.getElementById("top-opportunities").innerHTML =
-        top5.map(x =>
-            createPill(
-                `${x.ticker} | Score ${x.score}`
-            )
-        ).join("");
+    document.getElementById("top5").innerHTML =
+        top5.map(x => `
+            <div class="stock-pill">
+                <b>${x.ticker}</b>
+                | Score ${x.score}
+                | ${x.signal}
+            </div>
+        `).join("");
 
     const buy = data
         .filter(x => x.signal === "BUY")
         .slice(0,5);
 
-    document.getElementById("top-buy").innerHTML =
-        buy.map(x =>
-            createPill(
-                `${x.ticker} | ${x.momentum}%`
-            )
-        ).join("");
+    document.getElementById("buySection").innerHTML =
+        buy.map(x => `
+            <div class="stock-pill">
+                <b>${x.ticker}</b>
+                | Momentum ${x.momentum}%
+            </div>
+        `).join("");
 
     const sell = data
         .filter(x => x.signal === "SELL")
         .slice(0,5);
 
-    document.getElementById("top-sell").innerHTML =
-        sell.map(x =>
-            createPill(
-                `${x.ticker} | ${x.momentum}%`
-            )
-        ).join("");
+    document.getElementById("sellSection").innerHTML =
+        sell.map(x => `
+            <div class="stock-pill">
+                <b>${x.ticker}</b>
+                | Momentum ${x.momentum}%
+            </div>
+        `).join("");
 }
 
 function renderFooter(data){
 
-    document.getElementById("total-stocks").innerHTML =
+    document.getElementById("totalStocks").innerHTML =
         data.length;
 
-    document.getElementById("buy-count").innerHTML =
+    document.getElementById("buyCount").innerHTML =
         data.filter(x => x.signal==="BUY").length;
 
-    document.getElementById("sell-count").innerHTML =
+    document.getElementById("sellCount").innerHTML =
         data.filter(x => x.signal==="SELL").length;
 
-    document.getElementById("watch-count").innerHTML =
+    document.getElementById("watchCount").innerHTML =
         data.filter(x => x.signal==="WATCH").length;
 }
 
 function renderTable(data){
 
-    const tbody = document.getElementById("table-body");
+    const tbody = document.getElementById("tableBody");
 
     tbody.innerHTML = data.map((stock,index)=>`
 
@@ -470,38 +483,32 @@ ${stock.score}
 </div>
 </td>
 
-<td>
+<td class="${signalClass(stock.signal)}">
 ${stock.signal}
 </td>
 
+<td style="text-align:left;">
+${(stock.reasons || []).join(", ")}
+</td>
+
 <td>
-${stock.labels.map(l=>
-`
+${(stock.labels || []).map(label => `
 <span class="label">
-${l}
+${label}
 </span>
-`
-).join("")}
+`).join("")}
 </td>
 
 <td style="text-align:left;">
-${stock.reasons.join(", ")}
-</td>
 
-<td>
-
-${stock.news.map(n=>`
-
-<div class="news-item">
-
-<a href="${n.link}" target="_blank">
-
-${n.title}
-
+${(stock.news || []).map(news => `
+<a
+    href="${news.link}"
+    target="_blank"
+    class="news-link"
+>
+${news.title}
 </a>
-
-</div>
-
 `).join("")}
 
 </td>
@@ -524,12 +531,16 @@ ${n.title}
                 type:"line",
 
                 data:{
-                    labels:stock.history.map((_,i)=>i),
+
+                    labels:(stock.history || []).map((_,i)=>i),
+
                     datasets:[{
-                        data:stock.history,
+
+                        data:stock.history || [],
                         borderWidth:2,
                         pointRadius:0,
                         tension:0.3
+
                     }]
                 },
 
@@ -559,7 +570,7 @@ ${n.title}
 }
 
 document
-.getElementById("search")
+.getElementById("searchBox")
 .addEventListener("input",applyFilters);
 
 document
