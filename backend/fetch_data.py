@@ -133,7 +133,7 @@ def analyze_stock(ticker, buy_price):
         "signals": signals or ["No signal"],
 
         "history_1y": close.tail(250).round(2).fillna(0).tolist(),
-        "history_2y": close.tail(500).round(2).fillna(0).tolist()
+        "history_2y": close.tail(500).round(2).fillna(0).tolist(),
 
         # 🔥 NEW FIELDS (used in ai.html)
         "rsi": rsi_value,
