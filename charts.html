@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-
-<title>Trend Explorer</title>
+<meta charset="UTF-8">
+<title>Market Trend Explorer</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -11,126 +11,209 @@
 body{
     font-family:Arial,sans-serif;
     background:#f5f7fa;
-    margin:20px;
+    margin:0;
+    padding:20px;
+    color:#334155;
+}
+
+h1{
+    margin-top:0;
+}
+
+.container{
+    display:grid;
+    grid-template-columns:70% 30%;
+    gap:20px;
 }
 
 .card{
     background:white;
-    border:1px solid #ddd;
+    border:1px solid #e2e8f0;
     border-radius:12px;
     padding:15px;
+    box-shadow:0 1px 4px rgba(0,0,0,.05);
 }
 
-.layout{
-    display:grid;
-    grid-template-columns:3fr 1fr;
-    gap:20px;
-}
-
-#stockList{
-    max-height:600px;
+#selectorCard{
+    position:sticky;
+    top:10px;
+    max-height:80vh;
     overflow:auto;
+}
+
+button{
+    padding:8px 14px;
+    border:1px solid #cbd5e1;
+    background:white;
+    cursor:pointer;
+    border-radius:6px;
+    margin-right:5px;
+}
+
+button:hover{
+    background:#f1f5f9;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    border:1px solid #cbd5e1;
+    border-radius:6px;
+    margin-bottom:15px;
+}
+
+.stock-item{
+    padding:4px 0;
+}
+
+.cards{
+    margin-top:30px;
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+    gap:15px;
 }
 
 .stock-card{
     background:white;
-    border:1px solid #ddd;
-    border-radius:10px;
+    border:1px solid #e2e8f0;
+    border-radius:12px;
     padding:10px;
 }
 
-.cards{
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
-    gap:15px;
-    margin-top:20px;
+.stock-card canvas{
+    height:120px !important;
 }
 
-button{
-    padding:8px 12px;
-    margin-right:5px;
-    cursor:pointer;
-}
-
-input{
-    padding:10px;
-    width:300px;
+.mode-active{
+    background:#2563eb;
+    color:white;
 }
 
 </style>
-
 </head>
 
 <body>
 
-<h1>📈 Portfolio Trend Explorer</h1>
+<h1>📈 Market Trend Explorer</h1>
 
-<input id="searchBox"
-       placeholder="Search stock...">
+<div style="margin-bottom:15px;">
 
-<br><br>
-
+<button onclick="setRange('1mo')">1M</button>
+<button onclick="setRange('3mo')">3M</button>
+<button onclick="setRange('6mo')">6M</button>
 <button onclick="setRange('1y')">1Y</button>
 <button onclick="setRange('2y')">2Y</button>
+<button onclick="setRange('3y')">3Y</button>
 
-<br><br>
+&nbsp;&nbsp;&nbsp;
 
-<div class="layout">
+<button id="normBtn"
+        class="mode-active"
+        onclick="setMode('normalized')">
+Normalized
+</button>
 
-    <div class="card">
-        <canvas id="mainChart"></canvas>
-    </div>
-
-    <div class="card">
-
-        <h3>Compare Stocks</h3>
-
-        <div id="stockList"></div>
-
-    </div>
+<button id="rawBtn"
+        onclick="setMode('raw')">
+Raw Price
+</button>
 
 </div>
 
-<h2>All Stocks</h2>
+<div class="container">
 
-<div id="cards"
-     class="cards"></div>
+<div class="card">
+
+<canvas id="mainChart" height="130"></canvas>
+
+</div>
+
+<div class="card" id="selectorCard">
+
+<input
+ id="searchBox"
+ placeholder="Search stocks..."
+ onkeyup="filterStocks()">
+
+<div id="stockList"></div>
+
+</div>
+
+</div>
+
+<h2 style="margin-top:40px;">
+All Stock Trends
+</h2>
+
+<div id="cards" class="cards"></div>
 
 <script>
 
-let stocks=[];
+let stockData={};
 let selected=[];
-let currentRange="2y";
+let range="2y";
+let mode="normalized";
+let mainChart;
 
-fetch("data.json")
+fetch("historical_prices.json")
 .then(r=>r.json())
 .then(data=>{
 
-    stocks=data;
+    stockData=data;
 
-    buildSelector();
-    buildCards();
+    buildStockList();
+    buildMiniCards();
 
 });
 
-function buildSelector(){
+function buildStockList(){
 
     let html="";
 
-    stocks.forEach(s=>{
+    Object.keys(stockData)
+    .sort()
+    .forEach(ticker=>{
 
-        html+=`
-        <div>
-          <label>
-          <input type="checkbox"
-                 value="${s.ticker}"
-                 onchange="toggleStock(this)">
-          ${s.ticker}
-          </label>
-        </div>`;
+        html += `
+        <div class="stock-item">
+
+        <label>
+
+        <input
+            type="checkbox"
+            value="${ticker}"
+            onchange="toggleStock(this)">
+
+        ${ticker}
+
+        </label>
+
+        </div>
+        `;
     });
 
     stockList.innerHTML=html;
+}
+
+function filterStocks(){
+
+    let text=
+    document
+    .getElementById("searchBox")
+    .value
+    .toLowerCase();
+
+    document
+    .querySelectorAll(".stock-item")
+    .forEach(item=>{
+
+        item.style.display=
+        item.innerText
+        .toLowerCase()
+        .includes(text)
+        ? ""
+        : "none";
+    });
 }
 
 function toggleStock(cb){
@@ -142,105 +225,151 @@ function toggleStock(cb){
     }else{
 
         selected=
-        selected.filter(x=>x!==cb.value);
+        selected.filter(
+          x=>x!==cb.value
+        );
     }
 
-    renderChart();
+    renderMainChart();
 }
 
-let chart;
+function setRange(r){
 
-function renderChart(){
+    range=r;
+
+    renderMainChart();
+}
+
+function setMode(m){
+
+    mode=m;
+
+    normBtn.classList.remove("mode-active");
+    rawBtn.classList.remove("mode-active");
+
+    if(m==="normalized")
+        normBtn.classList.add("mode-active");
+    else
+        rawBtn.classList.add("mode-active");
+
+    renderMainChart();
+}
+
+function getLength(){
+
+    switch(range){
+
+        case "1mo": return 22;
+        case "3mo": return 66;
+        case "6mo": return 132;
+        case "1y": return 252;
+        case "2y": return 504;
+        case "3y": return 756;
+    }
+
+    return 504;
+}
+
+function renderMainChart(){
 
     const datasets=[];
+
+    let labels=[];
 
     selected.forEach(ticker=>{
 
         const stock=
-        stocks.find(s=>s.ticker===ticker);
+        stockData[ticker];
 
         if(!stock) return;
 
-        const history=
-        currentRange==="1y"
-        ? stock.history_1y
-        : stock.history_2y;
+        let prices=
+        stock.prices.slice(
+            -getLength()
+        );
 
-        if(!history?.length) return;
+        let dates=
+        stock.dates.slice(
+            -getLength()
+        );
 
-        const base=history[0];
+        labels=dates;
 
-        const normalized=
-        history.map(x=>((x/base)-1)*100);
+        if(mode==="normalized"){
+
+            const base=
+            prices[0];
+
+            prices=
+            prices.map(
+                p=>(
+                    ((p/base)-1)*100
+                ).toFixed(2)
+            );
+        }
 
         datasets.push({
 
             label:ticker,
-            data:normalized
+            data:prices,
+            borderWidth:2,
+            pointRadius:0,
+            tension:.1
 
         });
+
     });
 
-    if(chart) chart.destroy();
+    if(mainChart)
+        mainChart.destroy();
 
-    chart=new Chart(
-        document.getElementById("mainChart"),
-        {
+    mainChart=
+    new Chart(
+      document.getElementById("mainChart"),
+      {
 
-            type:"line",
+        type:"line",
 
-            data:{
-                labels:[...Array(500).keys()],
-                datasets
+        data:{
+            labels,
+            datasets
+        },
+
+        options:{
+
+            responsive:true,
+
+            interaction:{
+                mode:'index',
+                intersect:false
             },
 
-            options:{
-                responsive:true,
-                interaction:{
-                    mode:'nearest'
-                },
-
-                plugins:{
-                    title:{
-                        display:true,
-                        text:"Performance (%)"
-                    }
+            plugins:{
+                legend:{
+                    position:'top'
                 }
             }
         }
-    );
+    });
 }
 
-function setRange(range){
-
-    currentRange=range;
-
-    renderChart();
-}
-
-function buildCards(){
+function buildMiniCards(){
 
     let html="";
 
-    stocks.forEach(stock=>{
+    Object.keys(stockData)
+    .sort()
+    .forEach(ticker=>{
 
-        html+=`
+        html += `
 
         <div class="stock-card">
 
-          <h4>${stock.ticker}</h4>
+            <b>${ticker}</b>
 
-          <div>
-            Current:
-            ${stock.current}
-          </div>
-
-          <div>
-            PnL:
-            ${stock.pnl}%
-          </div>
-
-          <canvas id="mini-${stock.ticker.replace('.','')}"></canvas>
+            <canvas
+                id="mini_${ticker.replace(/\./g,'_')}">
+            </canvas>
 
         </div>
 
@@ -249,38 +378,46 @@ function buildCards(){
 
     cards.innerHTML=html;
 
-    setTimeout(drawMiniCharts,500);
+    setTimeout(drawMiniCharts,300);
 }
 
 function drawMiniCharts(){
 
-    stocks.forEach(stock=>{
+    Object.keys(stockData)
+    .forEach(ticker=>{
 
-        const id=
-        "mini-"+stock.ticker.replace('.','');
+        const stock=
+        stockData[ticker];
 
-        const el=
-        document.getElementById(id);
+        const canvas=
+        document.getElementById(
+          "mini_"+
+          ticker.replace(/\./g,'_')
+        );
 
-        if(!el) return;
+        if(!canvas) return;
 
-        new Chart(el,{
+        new Chart(canvas,{
 
-            type:'line',
+            type:"line",
 
             data:{
+
                 labels:
-                stock.history_1y.map((_,i)=>i),
+                stock.prices.map((_,i)=>i),
 
                 datasets:[{
 
-                    data:stock.history_1y,
-                    pointRadius:0
+                    data:stock.prices,
 
+                    pointRadius:0,
+
+                    borderWidth:1.5
                 }]
             },
 
             options:{
+
                 responsive:true,
 
                 plugins:{
@@ -295,7 +432,6 @@ function drawMiniCharts(){
         });
 
     });
-
 }
 
 </script>
