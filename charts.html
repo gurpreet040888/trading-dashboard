@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Trend Explorer</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+    font-family:Arial,sans-serif;
+    background:#f5f7fa;
+    margin:20px;
+}
+
+.card{
+    background:white;
+    border:1px solid #ddd;
+    border-radius:12px;
+    padding:15px;
+}
+
+.layout{
+    display:grid;
+    grid-template-columns:3fr 1fr;
+    gap:20px;
+}
+
+#stockList{
+    max-height:600px;
+    overflow:auto;
+}
+
+.stock-card{
+    background:white;
+    border:1px solid #ddd;
+    border-radius:10px;
+    padding:10px;
+}
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+    gap:15px;
+    margin-top:20px;
+}
+
+button{
+    padding:8px 12px;
+    margin-right:5px;
+    cursor:pointer;
+}
+
+input{
+    padding:10px;
+    width:300px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>📈 Portfolio Trend Explorer</h1>
+
+<input id="searchBox"
+       placeholder="Search stock...">
+
+<br><br>
+
+<button onclick="setRange('1y')">1Y</button>
+<button onclick="setRange('2y')">2Y</button>
+
+<br><br>
+
+<div class="layout">
+
+    <div class="card">
+        <canvas id="mainChart"></canvas>
+    </div>
+
+    <div class="card">
+
+        <h3>Compare Stocks</h3>
+
+        <div id="stockList"></div>
+
+    </div>
+
+</div>
+
+<h2>All Stocks</h2>
+
+<div id="cards"
+     class="cards"></div>
+
+<script>
+
+let stocks=[];
+let selected=[];
+let currentRange="2y";
+
+fetch("data.json")
+.then(r=>r.json())
+.then(data=>{
+
+    stocks=data;
+
+    buildSelector();
+    buildCards();
+
+});
+
+function buildSelector(){
+
+    let html="";
+
+    stocks.forEach(s=>{
+
+        html+=`
+        <div>
+          <label>
+          <input type="checkbox"
+                 value="${s.ticker}"
+                 onchange="toggleStock(this)">
+          ${s.ticker}
+          </label>
+        </div>`;
+    });
+
+    stockList.innerHTML=html;
+}
+
+function toggleStock(cb){
+
+    if(cb.checked){
+
+        selected.push(cb.value);
+
+    }else{
+
+        selected=
+        selected.filter(x=>x!==cb.value);
+    }
+
+    renderChart();
+}
+
+let chart;
+
+function renderChart(){
+
+    const datasets=[];
+
+    selected.forEach(ticker=>{
+
+        const stock=
+        stocks.find(s=>s.ticker===ticker);
+
+        if(!stock) return;
+
+        const history=
+        currentRange==="1y"
+        ? stock.history_1y
+        : stock.history_2y;
+
+        if(!history?.length) return;
+
+        const base=history[0];
+
+        const normalized=
+        history.map(x=>((x/base)-1)*100);
+
+        datasets.push({
+
+            label:ticker,
+            data:normalized
+
+        });
+    });
+
+    if(chart) chart.destroy();
+
+    chart=new Chart(
+        document.getElementById("mainChart"),
+        {
+
+            type:"line",
+
+            data:{
+                labels:[...Array(500).keys()],
+                datasets
+            },
+
+            options:{
+                responsive:true,
+                interaction:{
+                    mode:'nearest'
+                },
+
+                plugins:{
+                    title:{
+                        display:true,
+                        text:"Performance (%)"
+                    }
+                }
+            }
+        }
+    );
+}
+
+function setRange(range){
+
+    currentRange=range;
+
+    renderChart();
+}
+
+function buildCards(){
+
+    let html="";
+
+    stocks.forEach(stock=>{
+
+        html+=`
+
+        <div class="stock-card">
+
+          <h4>${stock.ticker}</h4>
+
+          <div>
+            Current:
+            ${stock.current}
+          </div>
+
+          <div>
+            PnL:
+            ${stock.pnl}%
+          </div>
+
+          <canvas id="mini-${stock.ticker.replace('.','')}"></canvas>
+
+        </div>
+
+        `;
+    });
+
+    cards.innerHTML=html;
+
+    setTimeout(drawMiniCharts,500);
+}
+
+function drawMiniCharts(){
+
+    stocks.forEach(stock=>{
+
+        const id=
+        "mini-"+stock.ticker.replace('.','');
+
+        const el=
+        document.getElementById(id);
+
+        if(!el) return;
+
+        new Chart(el,{
+
+            type:'line',
+
+            data:{
+                labels:
+                stock.history_1y.map((_,i)=>i),
+
+                datasets:[{
+
+                    data:stock.history_1y,
+                    pointRadius:0
+
+                }]
+            },
+
+            options:{
+                responsive:true,
+
+                plugins:{
+                    legend:false
+                },
+
+                scales:{
+                    x:{display:false},
+                    y:{display:false}
+                }
+            }
+        });
+
+    });
+
+}
+
+</script>
+
+</body>
+</html>
