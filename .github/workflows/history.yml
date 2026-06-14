@@ -1,6 +1,6 @@
 name: Generate Historical Prices
 
-on:
+"on":
   workflow_dispatch:
 
   schedule:
@@ -9,16 +9,26 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: trading-dashboard-updates
+  cancel-in-progress: false
+
 jobs:
   update:
+
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          python-version: '3.11'
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
@@ -28,6 +38,11 @@ jobs:
         run: |
           python backend/generate_history.py
 
+      - name: Verify generated file
+        run: |
+          ls -lh historical_prices.json
+          head -20 historical_prices.json || true
+
       - name: Commit and push changes
         run: |
           git config --global user.name "github-actions"
@@ -35,6 +50,13 @@ jobs:
 
           git add historical_prices.json
 
-          git commit -m "Update historical prices" || echo "No changes"
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
 
-          git push
+          git commit -m "Update historical prices"
+
+          git pull --rebase origin main || true
+
+          git push origin HEAD:main

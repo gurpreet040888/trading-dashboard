@@ -10,6 +10,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: trading-dashboard-updates
+  cancel-in-progress: false
+
 jobs:
 
   scan-market:
