@@ -1,0 +1,49 @@
+name: Fetch Indian MF Data
+
+on:
+  schedule:
+    - cron: '30 13 * * 1-5'   # 7:00 PM IST (13:30 UTC), Mon-Fri
+  workflow_dispatch:            # Allow manual trigger
+
+# Prevent this workflow from overlapping with itself
+concurrency:
+  group: trading-dashboard-updates
+  cancel-in-progress: false    # Wait for the running job, don't cancel it
+
+jobs:
+  fetch-funds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0       # Full history so rebase works correctly
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run data pipeline
+        run: python backend/fetch_funds.py
+
+      - name: Commit and push funds.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add funds.json
+          # Skip commit+push if nothing changed
+          if git diff --staged --quiet; then
+            echo "No changes to funds.json, skipping push."
+            exit 0
+          fi
+          git commit -m "chore: update funds data $(date -u +'%Y-%m-%d %H:%M UTC')"
+          # Pull latest remote changes (rebase) before pushing to avoid conflicts
+          git pull --rebase origin main
+          git push origin main
