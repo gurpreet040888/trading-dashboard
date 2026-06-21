@@ -40,21 +40,25 @@ CSV_FIELDS = [
 ]
 
 # ── Category classification ──────────────────────────────────────────────────
+# Order matters — more specific categories checked first to avoid misclassification.
+# e.g. "Gold ETF" must match Gold before Index/ETF; "Nifty Midcap ETF" must match
+# Index/ETF before Mid Cap. classify_category() returns on first match.
 CATEGORY_MAP = {
-    "Large Cap":       ["large cap","largecap","large-cap","bluechip","blue chip"],
-    "Mid Cap":         ["mid cap","midcap","mid-cap"],
-    "Small Cap":       ["small cap","smallcap","small-cap"],
-    "Multi Cap":       ["multi cap","multicap","multi-cap","flexi cap","flexicap"],
-    "Large & Mid Cap": ["large & mid","large and mid"],
-    "ELSS":            ["elss","tax saver","tax saving","linked saving"],
-    "Hybrid":          ["hybrid","balanced","aggressive hybrid","conservative hybrid",
-                        "equity savings","arbitrage","asset allocator","multi asset"],
+    "Gold":            ["gold","silver"],
     "Debt":            ["debt","liquid","overnight","ultra short","short duration",
                         "medium duration","long duration","gilt","credit risk","floater",
                         "dynamic bond","money market","banking and psu","corporate bond",
                         "low duration","medium to long"],
     "Index / ETF":     ["index","nifty","sensex","bse","nse","etf","s&p","nasdaq",
-                        "dow jones","hang seng","crisil"],
+                        "dow jones","hang seng","crisil","bees","msci","qqq"],
+    "ELSS":            ["elss","tax saver","tax saving","linked saving"],
+    "Large Cap":       ["large cap","largecap","large-cap","bluechip","blue chip"],
+    "Mid Cap":         ["mid cap","midcap","mid-cap"],
+    "Small Cap":       ["small cap","smallcap","small-cap"],
+    "Multi Cap":       ["multi cap","multicap","multi-cap","flexi cap","flexicap"],
+    "Large & Mid Cap": ["large & mid","large and mid"],
+    "Hybrid":          ["hybrid","balanced","aggressive hybrid","conservative hybrid",
+                        "equity savings","arbitrage","asset allocator","multi asset"],
     "International":   ["international","global","overseas","world","us equity",
                         "greater china","europe","japan","emerging market","em equity"],
     "Sectoral":        ["pharma","infra","infrastructure","banking","fmcg","technology",
@@ -63,13 +67,12 @@ CATEGORY_MAP = {
                         "chemical","textile","steel","metal","mining","cement","media",
                         "telecom","utilities","power","digital","resources","commodities",
                         "agri","agriculture","rural","transportation","logistics",
-                        "hospitality","retail","export","quant","consumer","services","business"],
+                        "hospitality","retail","export","consumer","services","business"],
     "Thematic":        ["thematic","esg","value","contra","focused","opportunities",
                         "innovation","pioneer","special situation","business cycle",
                         "next generation","future","new age","momentum","alpha",
-                        "dividend yield","equity savings","quantitative"],
+                        "dividend yield","quantitative","quant"],
     "Fund of Funds":   ["fund of fund","fof"],
-    "Gold":            ["gold","silver"],
 }
 
 def classify_category(name, hint=""):
@@ -111,35 +114,50 @@ def is_stale(row):
 # ── MF API helpers ───────────────────────────────────────────────────────────
 def is_relevant_fund(name: str) -> tuple:
     """
-    Keep only: Direct Plan + Growth option + Open-ended funds.
-    Filters out ~92% of the mfapi list which is noise:
-      - Regular plans (higher expense ratio, inferior to Direct)
-      - IDCW / Dividend variants (same fund, different payout)
-      - FMPs / Fixed Maturity Plans (closed-ended, matured)
-      - Interval / Capital Protection / Close-ended schemes
-      - Segregated portfolios (credit event haircuts, not investable)
-      - Sweep / Bonus plans
+    Keep only investable, non-duplicate funds:
+      PASS: Direct Plan Growth (open-ended MFs)
+      PASS: ETFs — no Direct/Regular distinction, trade on exchange
+      SKIP: Regular plans (higher expense ratio vs Direct)
+      SKIP: IDCW / Dividend variants (same fund, different payout mode)
+      SKIP: FMPs / Fixed Maturity Plans (closed-ended, already matured)
+      SKIP: Interval / Capital Protection / Close-ended schemes
+      SKIP: Segregated portfolios (Franklin-era credit haircuts)
+      SKIP: Sweep / Bonus plans
     """
     n = name.lower()
 
+    # ── ETFs: always keep (no Direct/Regular split, exchange-traded) ──────────
+    # Exclude ETF IDCW variants (rare but exist)
+    if "etf" in n or "bees" in n:
+        for t in ["idcw", "dividend", "payout"]:
+            if t in n:
+                return False, "ETF Dividend variant"
+        return True, "ETF"
+
+    # ── Regular MFs: must be Direct plan ─────────────────────────────────────
     if "direct" not in n:
         return False, "Regular plan"
 
+    # Exclude IDCW / Dividend variants
     for t in ["idcw", "dividend", "payout", "reinvestment", "bonus"]:
         if t in n:
             return False, "Dividend/IDCW variant"
 
+    # Exclude FMPs
     for t in ["fmp", "fixed maturity", "fixed term"]:
         if t in n:
             return False, "FMP"
 
+    # Exclude interval, close-ended, capital protection
     for t in ["interval", "capital protection", "close ended", "closed ended", "dual advantage"]:
         if t in n:
             return False, "Closed-ended"
 
+    # Exclude segregated portfolios
     if "segregated" in n:
         return False, "Segregated portfolio"
 
+    # Exclude sweep plans
     if "sweep" in n:
         return False, "Sweep plan"
 
