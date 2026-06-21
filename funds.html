@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Fund Holdings · MF Tracker India</title>
+<title>MF Tracker India</title>
 <style>
   :root {
     --bg: #0d1117;
@@ -16,414 +16,719 @@
     --accent2: #58a6ff;
     --green: #3fb950;
     --red: #f85149;
-    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    --strong: #3fb950;
+    --watch: #d29922;
+    --avoid: #f85149;
+    --row-hover: #1c2128;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
     --font-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); font-size: 13px; line-height: 1.5; }
 
-  .header {
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .site-header {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
-    padding: 14px 20px;
+    padding: 12px 20px;
     display: flex;
     align-items: center;
-    gap: 16px;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 100;
   }
-  .back-btn {
-    color: var(--accent2);
-    text-decoration: none;
-    font-size: 13px;
-    padding: 5px 12px;
-    border: 1px solid rgba(88,166,255,0.3);
-    border-radius: 6px;
+  .site-header .logo {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.3px;
     white-space: nowrap;
   }
-  .back-btn:hover { background: rgba(88,166,255,0.08); }
-  .header-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .site-header .logo span { color: var(--text-muted); font-weight: 400; font-size: 12px; margin-left: 8px; }
+  .last-updated { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
 
-  .page { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
-
-  .fund-hero {
+  /* ── CONTROLS ── */
+  .controls {
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 20px 24px;
-    margin-bottom: 24px;
-  }
-  .fund-hero h1 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
-  .fund-meta {
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
     display: flex;
+    align-items: center;
+    gap: 10px;
     flex-wrap: wrap;
-    gap: 16px;
-    margin-bottom: 16px;
+    position: sticky;
+    top: 53px;
+    z-index: 99;
   }
-  .meta-item { font-size: 12px; color: var(--text-muted); }
-  .meta-item b { color: var(--text); font-weight: 600; }
-  .fund-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 12px;
-  }
-  .stat-box {
-    background: var(--surface2);
+  .controls input[type="text"] {
+    background: var(--bg);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    text-align: center;
-  }
-  .stat-val { font-size: 16px; font-weight: 700; font-family: var(--font-mono); }
-  .stat-lbl { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
-  .pos { color: var(--green); }
-  .neg { color: var(--red); }
-
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
-  @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px 20px;
-  }
-  .card h3 {
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: 6px;
     font-size: 13px;
-    font-weight: 600;
+    width: 220px;
+    outline: none;
+  }
+  .controls input[type="text"]:focus { border-color: var(--accent2); }
+  .controls select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+  }
+  .controls select:focus { border-color: var(--accent2); }
+  .fund-count { font-size: 12px; color: var(--text-muted); margin-left: auto; white-space: nowrap; }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    padding: 0 20px;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
     color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 14px;
+    padding: 10px 18px;
+    font-size: 13px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    font-family: var(--font-sans);
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-btn:hover:not(.active) { color: var(--text); }
+
+  /* ── CONTENT ── */
+  .content { padding: 0; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    overflow-x: auto;
+    height: calc(100vh - 160px);
+    overflow-y: auto;
   }
 
-  /* Holdings Table */
-  .holdings-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
-  .holdings-table th {
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1200px;
+    table-layout: fixed;
+  }
+
+  thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--surface2);
+  }
+
+  th {
+    padding: 10px 10px;
     text-align: left;
     font-size: 11px;
     font-weight: 600;
     color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.4px;
-    padding: 8px 10px;
+    letter-spacing: 0.5px;
     border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
   }
-  .holdings-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); font-size: 12px; }
-  .holdings-table tr:last-child td { border-bottom: none; }
-  .holdings-table tr:hover td { background: var(--surface2); }
-  .bar-wrap { display: flex; align-items: center; gap: 8px; }
-  .bar { height: 6px; border-radius: 3px; background: var(--accent); min-width: 2px; }
+  th:hover { color: var(--text); background: var(--border); }
+  th.sorted-asc::after { content: ' ▲'; color: var(--accent); font-size: 9px; }
+  th.sorted-desc::after { content: ' ▼'; color: var(--accent); font-size: 9px; }
 
-  /* Allocation bars */
-  .alloc-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-  .alloc-label { width: 120px; font-size: 12px; flex-shrink: 0; }
-  .alloc-bar-wrap { flex: 1; background: var(--surface2); border-radius: 4px; height: 10px; overflow: hidden; }
-  .alloc-bar { height: 100%; border-radius: 4px; }
-  .alloc-pct { width: 45px; text-align: right; font-size: 12px; font-family: var(--font-mono); font-weight: 600; flex-shrink: 0; }
+  /* column widths */
+  th:nth-child(1), td:nth-child(1) { width: 36px; text-align: center; }
+  th:nth-child(2), td:nth-child(2) { width: 280px; }
+  th:nth-child(3), td:nth-child(3) { width: 120px; }
+  th:nth-child(4), td:nth-child(4) { width: 80px; }
+  th:nth-child(5), td:nth-child(5) { width: 90px; }
+  th:nth-child(6), td:nth-child(6) { width: 60px; }
+  th:nth-child(7), td:nth-child(7) { width: 60px; }
+  th:nth-child(8), td:nth-child(8) { width: 60px; }
+  th:nth-child(9), td:nth-child(9) { width: 60px; }
+  th:nth-child(10), td:nth-child(10) { width: 60px; }
+  th:nth-child(11), td:nth-child(11) { width: 60px; }
+  th:nth-child(12), td:nth-child(12) { width: 60px; }
+  th:nth-child(13), td:nth-child(13) { width: 60px; }
+  th:nth-child(14), td:nth-child(14) { width: 70px; }
+  th:nth-child(15), td:nth-child(15) { width: 70px; }
+  th:nth-child(16), td:nth-child(16) { width: 80px; }
 
-  .loading { text-align: center; padding: 60px; color: var(--text-muted); }
-  .spinner { display: inline-block; width: 28px; height: 28px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; margin-bottom: 12px; }
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  tbody tr:hover { background: var(--row-hover); }
+
+  td {
+    padding: 9px 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .fund-name { font-size: 12px; color: var(--text); }
+  .fund-isin { font-size: 10px; color: var(--text-muted); font-family: var(--font-mono); }
+  .fund-link { color: var(--accent2); text-decoration: none; font-size: 11px; }
+  .fund-link:hover { text-decoration: underline; }
+
+  .pos { color: var(--green); }
+  .neg { color: var(--red); }
+  .na  { color: var(--text-muted); }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+  .badge-strong { background: rgba(63,185,80,0.15); color: var(--strong); border: 1px solid rgba(63,185,80,0.3); }
+  .badge-watch  { background: rgba(210,153,34,0.15); color: var(--watch); border: 1px solid rgba(210,153,34,0.3); }
+  .badge-avoid  { background: rgba(248,81,73,0.15);  color: var(--avoid); border: 1px solid rgba(248,81,73,0.3); }
+  .badge-na     { background: rgba(139,148,158,0.1); color: var(--text-muted); border: 1px solid var(--border); }
+
+  .cat-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 500;
+    background: rgba(88,166,255,0.1);
+    color: var(--accent2);
+    border: 1px solid rgba(88,166,255,0.2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 110px;
+  }
+
+  .nav-val { font-family: var(--font-mono); font-size: 12px; }
+  .score-val { font-family: var(--font-mono); font-weight: 700; }
+
+  /* ── TOP 5 PER CATEGORY ── */
+  .top5-wrap { padding: 20px; }
+  .top5-wrap h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .top5-subtitle { font-size: 12px; color: var(--text-muted); margin-bottom: 24px; }
+
+  .category-section { margin-bottom: 32px; }
+  .category-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .category-title .cat-icon { font-size: 16px; }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 12px;
+  }
+
+  .fund-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    transition: border-color 0.15s;
+  }
+  .fund-card:hover { border-color: var(--accent2); }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .card-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+    flex: 1;
+  }
+  .card-rank {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--accent);
+    opacity: 0.5;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .card-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .metric { text-align: center; }
+  .metric-val { font-size: 13px; font-weight: 700; font-family: var(--font-mono); }
+  .metric-lbl { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .card-nav { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+  .card-detail-link {
+    font-size: 11px;
+    color: var(--accent2);
+    text-decoration: none;
+    padding: 3px 8px;
+    border: 1px solid rgba(88,166,255,0.3);
+    border-radius: 4px;
+  }
+  .card-detail-link:hover { background: rgba(88,166,255,0.08); }
+
+  .why-pick {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    font-style: italic;
+    line-height: 1.4;
+  }
+
+  /* ── LOADING ── */
+  .loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    gap: 16px;
+    color: var(--text-muted);
+  }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .error { text-align: center; padding: 60px; color: var(--red); }
 
-  .sector-dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; flex-shrink: 0; }
+  .error-msg {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--red);
+    font-size: 14px;
+  }
 
-  /* Donut chart */
-  .donut-wrap { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-  .donut-legend { flex: 1; min-width: 140px; }
-  .legend-row { display: flex; align-items: center; gap: 6px; margin-bottom: 7px; font-size: 11px; }
-  .legend-name { flex: 1; color: var(--text-muted); }
-  .legend-pct { font-weight: 700; font-family: var(--font-mono); color: var(--text); }
+  /* ── VIRTUAL SCROLL sentinel ── */
+  #sentinel { height: 1px; }
 
-  .note { font-size: 11px; color: var(--text-muted); margin-top: 8px; }
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    .site-header { padding: 10px 14px; }
+    .controls { padding: 8px 14px; }
+    .controls input[type="text"] { width: 160px; }
+    .top5-wrap { padding: 14px; }
+    .cards-grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <a class="back-btn" href="funds.html">← Back to All Funds</a>
-  <div class="header-title" id="headerTitle">Loading…</div>
+<header class="site-header">
+  <div class="logo">📊 MF Tracker India <span>All Mutual Funds · Smart Score · Daily Data</span></div>
+  <div class="last-updated" id="lastUpdated">Loading…</div>
+</header>
+
+<div class="controls">
+  <input type="text" id="searchBox" placeholder="🔍  Search fund name or ISIN…" oninput="onFilter()"/>
+  <select id="catFilter" onchange="onFilter()">
+    <option value="">All Categories</option>
+  </select>
+  <select id="labelFilter" onchange="onFilter()">
+    <option value="">All Ratings</option>
+    <option value="Strong Pick">🟢 Strong Pick</option>
+    <option value="Watch">🟡 Watch</option>
+    <option value="Avoid">🔴 Avoid</option>
+  </select>
+  <div class="fund-count" id="fundCount"></div>
 </div>
 
-<div class="page">
-  <div id="loadingEl" class="loading">
-    <div><div class="spinner"></div></div>
-    <div>Fetching fund details…</div>
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('all')">All Funds</button>
+  <button class="tab-btn" onclick="switchTab('top5')">🏆 Top-5 Per Category</button>
+</div>
+
+<div class="content">
+
+  <!-- ALL FUNDS TAB -->
+  <div class="tab-panel active" id="tab-all">
+    <div class="table-wrap" id="tableWrap" onscroll="onScroll()">
+      <div class="loading" id="loadingMsg">
+        <div class="spinner"></div>
+        <div>Loading fund data…</div>
+      </div>
+      <table id="mainTable" style="display:none">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th onclick="sortBy('schemeName')">Fund Name</th>
+            <th onclick="sortBy('category')">Category</th>
+            <th onclick="sortBy('nav')" style="text-align:right">NAV ₹</th>
+            <th onclick="sortBy('smartScore')" style="text-align:center">Smart Score</th>
+            <th onclick="sortBy('1m')" style="text-align:right">1M %</th>
+            <th onclick="sortBy('3m')" style="text-align:right">3M %</th>
+            <th onclick="sortBy('6m')" style="text-align:right">6M %</th>
+            <th onclick="sortBy('1y')" style="text-align:right">1Y %</th>
+            <th onclick="sortBy('2y')" style="text-align:right">2Y %</th>
+            <th onclick="sortBy('3y')" style="text-align:right">3Y %</th>
+            <th onclick="sortBy('4y')" style="text-align:right">4Y %</th>
+            <th onclick="sortBy('5y')" style="text-align:right">5Y %</th>
+            <th onclick="sortBy('sharpe')" style="text-align:right">Sharpe</th>
+            <th onclick="sortBy('maxDrawdown')" style="text-align:right">Max DD%</th>
+            <th onclick="sortBy('smartLabel')" style="text-align:center">Rating</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div id="sentinel"></div>
+    </div>
   </div>
-  <div id="mainContent" style="display:none"></div>
+
+  <!-- TOP 5 TAB -->
+  <div class="tab-panel" id="tab-top5">
+    <div class="top5-wrap">
+      <h2>🏆 Top-5 Funds Per Category</h2>
+      <p class="top5-subtitle">Ranked by Smart Score — weighted combination of 3Y returns, Sharpe ratio, consistency, low volatility &amp; drawdown. Best for long-term, mild-risk investors.</p>
+      <div id="top5Grid"></div>
+    </div>
+  </div>
+
 </div>
 
 <script>
-const COLORS = [
-  '#f0b429','#58a6ff','#3fb950','#f85149','#a371f7',
-  '#fb8500','#06d6a0','#ef476f','#ffd166','#118ab2',
-  '#e76f51','#2ec4b6','#c77dff','#90be6d','#f9c74f'
-];
+// ── State ──
+let ALL_FUNDS = [];
+let FILTERED = [];
+let TOP5 = {};
+let sortKey = 'smartScore';
+let sortDir = -1; // -1 = desc
+let visibleCount = 100;
+const PAGE_SIZE = 100;
 
-function getParams() {
-  const p = new URLSearchParams(window.location.search);
-  return { code: p.get('code') };
-}
+const CAT_ICON = {
+  "Large Cap": "🏛️",
+  "Mid Cap": "🏢",
+  "Small Cap": "🏗️",
+  "Multi Cap": "🌐",
+  "Large & Mid Cap": "🏛️🏢",
+  "ELSS": "💰",
+  "Hybrid": "⚖️",
+  "Debt": "🏦",
+  "Index": "📈",
+  "International": "🌍",
+  "Sectoral": "🏭",
+  "Thematic": "💡",
+  "Fund of Funds": "📦",
+  "Gold": "🥇",
+  "Other": "📊"
+};
 
-async function load() {
-  const { code } = getParams();
-  if (!code) { showError('No fund code provided.'); return; }
-
+// ── Load Data ──
+async function loadData() {
   try {
-    // Fetch NAV + meta
-    const r1 = await fetch(`https://api.mfapi.in/mf/${code}`);
-    if (!r1.ok) throw new Error('Fund not found');
-    const data = await r1.json();
+    const r = await fetch('funds.json?_=' + Date.now());
+    if (!r.ok) throw new Error('funds.json not found');
+    const data = await r.json();
 
-    const meta = data.meta || {};
-    const navList = data.data || [];
-    const nav = navList[0] ? parseFloat(navList[0].nav) : null;
-    const navDate = navList[0]?.date || '';
+    document.getElementById('lastUpdated').textContent = '🕐 Updated: ' + (data.lastUpdated || 'Unknown');
+    ALL_FUNDS = data.funds || [];
+    TOP5 = data.top5PerCategory || {};
 
-    document.getElementById('headerTitle').textContent = meta.scheme_name || 'Fund Detail';
-    document.title = (meta.scheme_name || 'Fund') + ' · MF Tracker';
+    // Populate category filter
+    const cats = [...new Set(ALL_FUNDS.map(f => f.category))].sort();
+    const sel = document.getElementById('catFilter');
+    cats.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c; o.textContent = c;
+      sel.appendChild(o);
+    });
 
-    // Build returns
-    const returns = calcReturns(navList);
-
-    let html = buildHero(meta, nav, navDate, navList.length, returns);
-
-    // Try to fetch holdings
-    let holdingsHtml = '';
-    try {
-      const r2 = await fetch(`https://api.mfapi.in/mf/${code}/holdings`);
-      if (r2.ok) {
-        const hData = await r2.json();
-        const holdings = hData.data || hData.holdings || [];
-        if (holdings.length > 0) {
-          holdingsHtml = buildHoldings(holdings);
-        } else {
-          holdingsHtml = noHoldingsMsg();
-        }
-      } else {
-        holdingsHtml = noHoldingsMsg();
-      }
-    } catch {
-      holdingsHtml = noHoldingsMsg();
-    }
-
-    html += holdingsHtml;
-
-    document.getElementById('mainContent').innerHTML = html;
-    document.getElementById('loadingEl').style.display = 'none';
-    document.getElementById('mainContent').style.display = 'block';
-
-    // Draw donut after DOM insertion
-    drawDonut();
-
+    applyFilter();
+    renderTop5();
+    document.getElementById('loadingMsg').style.display = 'none';
+    document.getElementById('mainTable').style.display = '';
   } catch(e) {
-    showError(e.message);
+    document.getElementById('loadingMsg').innerHTML =
+      `<div class="error-msg">⚠️ Could not load funds.json<br><small>${e.message}</small><br><small style="color:var(--text-muted);margin-top:8px;display:block">Run the GitHub Action or <code>python fetch_funds.py</code> locally first.</small></div>`;
   }
 }
 
-function calcReturns(navList) {
-  if (!navList.length) return {};
-  const latest = parseFloat(navList[0].nav);
-  const now = new Date();
-  const periods = { '1M': 30, '3M': 91, '6M': 182, '1Y': 365, '2Y': 730, '3Y': 1095, '5Y': 1825 };
-  const result = {};
-  for (const [k, days] of Object.entries(periods)) {
-    const target = new Date(now - days * 86400000);
-    for (const entry of navList) {
-      const d = parseDate(entry.date);
-      if (d && d <= target) {
-        const past = parseFloat(entry.nav);
-        if (past > 0) {
-          const yrs = days / 365;
-          let ret = ((latest - past) / past) * 100;
-          if (yrs > 1) ret = (Math.pow(latest / past, 1 / yrs) - 1) * 100;
-          result[k] = ret.toFixed(2);
-        }
-        break;
-      }
+// ── Filter + Sort ──
+function onFilter() {
+  visibleCount = PAGE_SIZE;
+  applyFilter();
+}
+
+function applyFilter() {
+  const q = document.getElementById('searchBox').value.toLowerCase().trim();
+  const cat = document.getElementById('catFilter').value;
+  const label = document.getElementById('labelFilter').value;
+
+  FILTERED = ALL_FUNDS.filter(f => {
+    if (cat && f.category !== cat) return false;
+    if (label && f.smartLabel !== label) return false;
+    if (q) {
+      const name = (f.schemeName || '').toLowerCase();
+      const isin = (f.isin || '').toLowerCase();
+      if (!name.includes(q) && !isin.includes(q)) return false;
     }
-  }
-  return result;
-}
-
-function parseDate(s) {
-  if (!s) return null;
-  const p = s.split('-');
-  if (p.length !== 3) return null;
-  return new Date(+p[2], +p[1] - 1, +p[0]);
-}
-
-function buildHero(meta, nav, navDate, dataPoints, returns) {
-  const retHtml = Object.entries(returns).map(([k, v]) => {
-    const n = parseFloat(v);
-    const cls = n >= 0 ? 'pos' : 'neg';
-    return `<div class="stat-box"><div class="stat-val ${cls}">${n >= 0 ? '+' : ''}${n.toFixed(2)}%</div><div class="stat-lbl">${k} Return</div></div>`;
-  }).join('');
-
-  return `
-  <div class="fund-hero">
-    <h1>${esc(meta.scheme_name || 'Unknown Fund')}</h1>
-    <div class="fund-meta">
-      <div class="meta-item">AMC: <b>${esc(meta.fund_house || '—')}</b></div>
-      <div class="meta-item">Type: <b>${esc(meta.scheme_type || '—')}</b></div>
-      <div class="meta-item">Category: <b>${esc(meta.scheme_category || '—')}</b></div>
-      <div class="meta-item">ISIN (Growth): <b style="font-family:var(--font-mono)">${esc(meta.isin_growth || '—')}</b></div>
-      <div class="meta-item">NAV Date: <b>${esc(navDate)}</b></div>
-      <div class="meta-item">History: <b>${dataPoints} days</b></div>
-    </div>
-    <div style="margin-bottom:12px">
-      <div class="stat-box" style="display:inline-block;min-width:160px">
-        <div class="stat-val" style="color:var(--accent)">₹${nav?.toFixed(4) ?? '—'}</div>
-        <div class="stat-lbl">Current NAV</div>
-      </div>
-    </div>
-    <div class="fund-stats">${retHtml}</div>
-  </div>`;
-}
-
-function buildHoldings(holdings) {
-  // Normalize fields
-  const items = holdings.map(h => ({
-    name: h.company_name || h.name || h.instrumentName || '—',
-    sector: h.sector_name || h.sector || h.sectorName || '—',
-    pct: parseFloat(h.percentage || h.percentage_to_net_assets || h.percentageOfAssets || 0),
-    value: h.value || h.marketValue || null,
-    assetType: h.asset_type || h.assetType || null,
-  })).filter(h => h.pct > 0);
-
-  // Sort by pct desc
-  items.sort((a, b) => b.pct - a.pct);
-  const maxPct = items[0]?.pct || 1;
-
-  // Sector allocation
-  const sectorMap = {};
-  items.forEach(h => {
-    const s = h.sector || 'Others';
-    sectorMap[s] = (sectorMap[s] || 0) + h.pct;
-  });
-  const sectors = Object.entries(sectorMap).sort((a,b) => b[1]-a[1]);
-
-  // Asset type allocation
-  const assetMap = {};
-  items.forEach(h => {
-    const a = h.assetType || 'Equity';
-    assetMap[a] = (assetMap[a] || 0) + h.pct;
-  });
-  const assetTypes = Object.entries(assetMap).sort((a,b) => b[1]-a[1]);
-
-  const topHoldings = items.slice(0, 25);
-
-  let html = `
-  <div class="grid-2">
-    <div class="card">
-      <h3>Sector Allocation</h3>
-      <div id="donutWrap" class="donut-wrap">
-        <canvas id="donutCanvas" width="140" height="140" style="flex-shrink:0"></canvas>
-        <div class="donut-legend" id="donutLegend"></div>
-      </div>
-      <script>window._sectors=${JSON.stringify(sectors)}<\/script>
-    </div>
-    <div class="card">
-      <h3>Asset Allocation</h3>
-      ${assetTypes.map((([name, pct], i) => {
-        return `<div class="alloc-row">
-          <div class="alloc-label">${esc(name)}</div>
-          <div class="alloc-bar-wrap"><div class="alloc-bar" style="width:${pct}%;background:${COLORS[i % COLORS.length]}"></div></div>
-          <div class="alloc-pct">${pct.toFixed(1)}%</div>
-        </div>`;
-      })).join('')}
-    </div>
-  </div>
-
-  <div class="card" style="margin-bottom:24px">
-    <h3>Top Holdings (${topHoldings.length} of ${items.length})</h3>
-    <table class="holdings-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Company / Instrument</th>
-          <th>Sector</th>
-          <th style="text-align:right">% of Portfolio</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${topHoldings.map((h, i) => `
-          <tr>
-            <td style="color:var(--text-muted)">${i+1}</td>
-            <td>${esc(h.name)}</td>
-            <td style="color:var(--text-muted)">${esc(h.sector)}</td>
-            <td style="text-align:right">
-              <div class="bar-wrap" style="justify-content:flex-end">
-                <div class="bar" style="width:${Math.round(h.pct/maxPct*80)}px"></div>
-                <span style="font-family:var(--font-mono);font-weight:700">${h.pct.toFixed(2)}%</span>
-              </div>
-            </td>
-          </tr>`).join('')}
-      </tbody>
-    </table>
-    <p class="note">⚠️ Holdings data is as declared by the AMC and may be 1 month delayed per SEBI norms.</p>
-  </div>`;
-
-  return html;
-}
-
-function noHoldingsMsg() {
-  return `
-  <div class="card" style="margin-bottom:24px;text-align:center;padding:40px">
-    <div style="font-size:32px;margin-bottom:12px">📋</div>
-    <div style="color:var(--text-muted);font-size:13px">Holdings data not available for this fund via MF API.<br>
-    Check the AMC website or <a href="https://www.amfiindia.com" target="_blank" style="color:var(--accent2)">AMFI India</a> for portfolio disclosure.</div>
-  </div>`;
-}
-
-function drawDonut() {
-  const sectors = window._sectors;
-  if (!sectors || !sectors.length) return;
-  const canvas = document.getElementById('donutCanvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const cx = 70, cy = 70, R = 60, r = 35;
-  const total = sectors.reduce((s, [, v]) => s + v, 0);
-  let angle = -Math.PI / 2;
-
-  sectors.slice(0, 10).forEach(([name, val], i) => {
-    const slice = (val / total) * 2 * Math.PI;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, R, angle, angle + slice);
-    ctx.closePath();
-    ctx.fillStyle = COLORS[i % COLORS.length];
-    ctx.fill();
-    // donut hole
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, 2 * Math.PI);
-    ctx.fillStyle = '#161b22';
-    ctx.fill();
-    angle += slice;
+    return true;
   });
 
-  // Legend
-  const legend = document.getElementById('donutLegend');
-  if (legend) {
-    legend.innerHTML = sectors.slice(0, 10).map(([name, val], i) =>
-      `<div class="legend-row">
-        <span class="sector-dot" style="background:${COLORS[i]}"></span>
-        <span class="legend-name">${esc(name)}</span>
-        <span class="legend-pct">${val.toFixed(1)}%</span>
-      </div>`
-    ).join('');
+  sortFiltered();
+  renderTable();
+  document.getElementById('fundCount').textContent =
+    `Showing ${Math.min(visibleCount, FILTERED.length)} of ${FILTERED.length} funds`;
+}
+
+function sortBy(key) {
+  if (sortKey === key) { sortDir *= -1; }
+  else { sortKey = key; sortDir = -1; }
+  updateSortHeaders();
+  visibleCount = PAGE_SIZE;
+  sortFiltered();
+  renderTable();
+}
+
+function sortFiltered() {
+  FILTERED.sort((a, b) => {
+    let va, vb;
+    if (['1m','3m','6m','1y','2y','3y','4y','5y'].includes(sortKey)) {
+      va = a.returns?.[sortKey] ?? -Infinity;
+      vb = b.returns?.[sortKey] ?? -Infinity;
+    } else {
+      va = a[sortKey] ?? (sortDir === -1 ? -Infinity : Infinity);
+      vb = b[sortKey] ?? (sortDir === -1 ? -Infinity : Infinity);
+    }
+    if (typeof va === 'string') return sortDir * va.localeCompare(vb);
+    return sortDir * (va - vb);
+  });
+}
+
+function updateSortHeaders() {
+  document.querySelectorAll('th').forEach(th => {
+    th.classList.remove('sorted-asc', 'sorted-desc');
+  });
+  const colMap = {
+    schemeName: 1, category: 2, nav: 3, smartScore: 4,
+    '1m': 5, '3m': 6, '6m': 7, '1y': 8, '2y': 9,
+    '3y': 10, '4y': 11, '5y': 12, sharpe: 13, maxDrawdown: 14, smartLabel: 15
+  };
+  const idx = colMap[sortKey];
+  if (idx !== undefined) {
+    const th = document.querySelectorAll('th')[idx];
+    if (th) th.classList.add(sortDir === -1 ? 'sorted-desc' : 'sorted-asc');
   }
 }
 
-function showError(msg) {
-  document.getElementById('loadingEl').innerHTML = `<div class="error">⚠️ ${esc(msg)}</div>`;
+// ── Render Table (virtual: top visibleCount rows) ──
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  const slice = FILTERED.slice(0, visibleCount);
+  tbody.innerHTML = slice.map((f, i) => rowHtml(f, i + 1)).join('');
+  document.getElementById('fundCount').textContent =
+    `Showing ${slice.length} of ${FILTERED.length} funds`;
+}
+
+function fmt(v) {
+  if (v === null || v === undefined) return '<span class="na">—</span>';
+  const n = parseFloat(v);
+  const cls = n >= 0 ? 'pos' : 'neg';
+  return `<span class="${cls}">${n >= 0 ? '+' : ''}${n.toFixed(2)}</span>`;
+}
+
+function rowHtml(f, rank) {
+  const r = f.returns || {};
+  const scoreClass = f.smartScore >= 75 ? 'pos' : f.smartScore >= 55 ? '' : 'neg';
+  const badgeClass = f.smartLabelClass === 'strong' ? 'badge-strong'
+                   : f.smartLabelClass === 'watch'  ? 'badge-watch'
+                   : f.smartLabelClass === 'avoid'  ? 'badge-avoid' : 'badge-na';
+
+  return `<tr>
+    <td style="text-align:center;color:var(--text-muted);font-size:11px">${rank}</td>
+    <td>
+      <div class="fund-name" title="${esc(f.schemeName)}">${esc(f.schemeName)}</div>
+      <div class="fund-isin">${f.isin || '—'} · <a class="fund-link" href="fund_detail.html?code=${f.schemeCode}" target="_blank">Holdings ↗</a></div>
+    </td>
+    <td><span class="cat-badge" title="${f.category}">${f.category}</span></td>
+    <td style="text-align:right" class="nav-val">₹${f.nav?.toFixed(2) ?? '—'}</td>
+    <td style="text-align:center"><span class="score-val ${scoreClass}">${f.smartScore ?? '—'}</span></td>
+    <td style="text-align:right">${fmt(r['1m'])}</td>
+    <td style="text-align:right">${fmt(r['3m'])}</td>
+    <td style="text-align:right">${fmt(r['6m'])}</td>
+    <td style="text-align:right">${fmt(r['1y'])}</td>
+    <td style="text-align:right">${fmt(r['2y'])}</td>
+    <td style="text-align:right">${fmt(r['3y'])}</td>
+    <td style="text-align:right">${fmt(r['4y'])}</td>
+    <td style="text-align:right">${fmt(r['5y'])}</td>
+    <td style="text-align:right">${f.sharpe != null ? f.sharpe.toFixed(2) : '<span class="na">—</span>'}</td>
+    <td style="text-align:right">${f.maxDrawdown != null ? '<span class="neg">-'+f.maxDrawdown.toFixed(1)+'%</span>' : '<span class="na">—</span>'}</td>
+    <td style="text-align:center"><span class="badge ${badgeClass}">${f.smartLabel || 'N/A'}</span></td>
+  </tr>`;
 }
 
 function esc(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-load();
+// ── Infinite Scroll ──
+function onScroll() {
+  const wrap = document.getElementById('tableWrap');
+  if (wrap.scrollTop + wrap.clientHeight >= wrap.scrollHeight - 200) {
+    if (visibleCount < FILTERED.length) {
+      visibleCount += PAGE_SIZE;
+      renderTable();
+    }
+  }
+}
+
+// ── Top-5 Per Category ──
+function renderTop5() {
+  const container = document.getElementById('top5Grid');
+  if (!TOP5 || Object.keys(TOP5).length === 0) {
+    container.innerHTML = '<p style="color:var(--text-muted)">No data available.</p>';
+    return;
+  }
+
+  const catOrder = [
+    "Large Cap","Mid Cap","Small Cap","Multi Cap","Large & Mid Cap",
+    "ELSS","Hybrid","Index","Debt","Sectoral","Thematic","International","Gold","Fund of Funds","Other"
+  ];
+
+  let html = '';
+  const cats = [...catOrder, ...Object.keys(TOP5).filter(c => !catOrder.includes(c))];
+
+  cats.forEach(cat => {
+    const funds = TOP5[cat];
+    if (!funds || funds.length === 0) return;
+
+    const icon = CAT_ICON[cat] || '📊';
+    html += `<div class="category-section">
+      <div class="category-title"><span class="cat-icon">${icon}</span>${cat}</div>
+      <div class="cards-grid">`;
+
+    funds.forEach((f, i) => {
+      const r = f.returns || {};
+      const badgeClass = f.smartLabelClass === 'strong' ? 'badge-strong'
+                       : f.smartLabelClass === 'watch'  ? 'badge-watch'
+                       : f.smartLabelClass === 'avoid'  ? 'badge-avoid' : 'badge-na';
+      const why = buildWhy(f, i);
+
+      html += `<div class="fund-card">
+        <div class="card-header">
+          <div class="card-name">${esc(f.schemeName)}</div>
+          <div class="card-rank">#${i+1}</div>
+        </div>
+        <div class="why-pick">💡 ${why}</div>
+        <div class="card-metrics">
+          <div class="metric">
+            <div class="metric-val ${r['1y'] != null ? (r['1y']>=0?'pos':'neg') : 'na'}">${r['1y'] != null ? (r['1y']>=0?'+':'')+r['1y'].toFixed(1)+'%' : '—'}</div>
+            <div class="metric-lbl">1Y Return</div>
+          </div>
+          <div class="metric">
+            <div class="metric-val ${r['3y'] != null ? (r['3y']>=0?'pos':'neg') : 'na'}">${r['3y'] != null ? (r['3y']>=0?'+':'')+r['3y'].toFixed(1)+'%' : '—'}</div>
+            <div class="metric-lbl">3Y Return</div>
+          </div>
+          <div class="metric">
+            <div class="metric-val ${r['5y'] != null ? (r['5y']>=0?'pos':'neg') : 'na'}">${r['5y'] != null ? (r['5y']>=0?'+':'')+r['5y'].toFixed(1)+'%' : '—'}</div>
+            <div class="metric-lbl">5Y Return</div>
+          </div>
+          <div class="metric">
+            <div class="metric-val" style="color:var(--accent)">${f.smartScore ?? '—'}</div>
+            <div class="metric-lbl">Smart Score</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px;flex-wrap:wrap">
+          <span class="badge ${badgeClass}">${f.smartLabel || 'N/A'}</span>
+          ${f.sharpe != null ? `<span style="font-size:10px;color:var(--text-muted)">Sharpe: <b style="color:var(--text)">${f.sharpe.toFixed(2)}</b></span>` : ''}
+          ${f.consistency != null ? `<span style="font-size:10px;color:var(--text-muted)">Consistency: <b style="color:var(--text)">${f.consistency}%</b></span>` : ''}
+        </div>
+        <div class="card-footer">
+          <div class="card-nav">NAV: ₹${f.nav?.toFixed(2) ?? '—'} &nbsp;·&nbsp; ${f.isin || '—'}</div>
+          <a class="card-detail-link" href="fund_detail.html?code=${f.schemeCode}" target="_blank">Holdings ↗</a>
+        </div>
+      </div>`;
+    });
+
+    html += `</div></div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+function buildWhy(f, rank) {
+  const r = f.returns || {};
+  const parts = [];
+  if (f.smartScore >= 75) parts.push('top Smart Score');
+  if (r['3y'] != null && r['3y'] > 15) parts.push(`strong ${r['3y'].toFixed(1)}% 3Y CAGR`);
+  if (f.sharpe != null && f.sharpe > 1) parts.push(`good Sharpe of ${f.sharpe.toFixed(2)}`);
+  if (f.consistency != null && f.consistency >= 80) parts.push(`${f.consistency}% yearly consistency`);
+  if (f.maxDrawdown != null && f.maxDrawdown < 20) parts.push('low drawdown risk');
+  if (parts.length === 0) parts.push('balanced risk-return profile');
+  return parts.slice(0, 3).join(', ') + '.';
+}
+
+// ── Tabs ──
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── Init ──
+updateSortHeaders();
+loadData();
 </script>
 </body>
 </html>
