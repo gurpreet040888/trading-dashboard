@@ -19,8 +19,8 @@
 body{
     margin:0;
     padding:20px;
-    background:#020617;
-    color:white;
+    background:#f7f8fa;
+    color:#2b2f38;
     font-family:Arial,sans-serif;
 }
 
@@ -29,9 +29,21 @@ h1{
 }
 
 .subtitle{
-    color:#94a3b8;
+    color:#6b7280;
     margin-bottom:20px;
 }
+
+.site-nav{
+    display:flex; gap:6px; flex-wrap:wrap; justify-content:center;
+    padding:10px 14px; margin:-20px -20px 20px;
+    background:#ffffff; border-bottom:1px solid #e3e6eb;
+}
+.site-nav a{
+    font-size:12px; padding:6px 12px; border-radius:20px;
+    color:#4b5568; text-decoration:none; background:#f1f3f6; border:1px solid transparent;
+}
+.site-nav a:hover{ background:#e8ebf0; color:#2b2f38; }
+.site-nav a.active{ background:#dbe7fa; color:#2b5a9e; border-color:#c3d8f5; }
 
 .controls{
     display:flex;
@@ -44,9 +56,9 @@ h1{
 .controls select{
     padding:12px;
     border-radius:10px;
-    border:1px solid #334155;
-    background:#0f172a;
-    color:white;
+    border:1px solid #d7dbe2;
+    background:#ffffff;
+    color:#2b2f38;
 }
 
 .controls input{
@@ -61,10 +73,11 @@ h1{
 }
 
 .card{
-    background:#0f172a;
-    border:1px solid #334155;
+    background:#ffffff;
+    border:1px solid #e3e6eb;
     border-radius:16px;
     padding:16px;
+    box-shadow:0 1px 2px rgba(20,20,30,0.04);
 }
 
 .card h3{
@@ -73,7 +86,7 @@ h1{
 }
 
 .stock-pill{
-    background:#1e293b;
+    background:#f1f3f6;
     border-radius:10px;
     padding:10px;
     margin-bottom:8px;
@@ -83,72 +96,72 @@ h1{
 .table-container{
     overflow:auto;
     border-radius:16px;
-    border:1px solid #334155;
+    border:1px solid #e3e6eb;
 }
 
 table{
     width:100%;
     border-collapse:collapse;
-    background:#0f172a;
+    background:#ffffff;
 }
 
 th{
     position:sticky;
     top:0;
     z-index:10;
-    background:#111827;
+    background:#eef1f5;
     padding:12px;
-    border-bottom:1px solid #334155;
+    border-bottom:1px solid #e3e6eb;
     font-size:12px;
     white-space:nowrap;
 }
 
 td{
     padding:10px;
-    border-bottom:1px solid #1e293b;
+    border-bottom:1px solid #e9ebf0;
     text-align:center;
     font-size:12px;
     vertical-align:top;
 }
 
 tr:hover{
-    background:#172033;
+    background:#f3f5f8;
 }
 
 .green{
-    color:#22c55e;
+    color:#1f8a54;
     font-weight:bold;
 }
 
 .red{
-    color:#ef4444;
+    color:#c2453f;
     font-weight:bold;
 }
 
 .yellow{
-    color:#facc15;
+    color:#b3781f;
     font-weight:bold;
 }
 
 .signal-buy{
-    color:#22c55e;
+    color:#1f8a54;
     font-weight:bold;
 }
 
 .signal-sell{
-    color:#ef4444;
+    color:#c2453f;
     font-weight:bold;
 }
 
 .signal-watch{
-    color:#facc15;
+    color:#b3781f;
     font-weight:bold;
 }
 
 .label{
     display:inline-block;
     padding:4px 8px;
-    background:#1e293b;
+    background:#f1f3f6;
     border-radius:6px;
     margin:2px;
     font-size:10px;
@@ -158,7 +171,7 @@ tr:hover{
     display:block;
     margin-bottom:8px;
     text-align:left;
-    color:#38bdf8;
+    color:#3b6ea5;
     text-decoration:none;
 }
 
@@ -184,8 +197,8 @@ canvas{
 }
 
 .footer-card{
-    background:#0f172a;
-    border:1px solid #334155;
+    background:#ffffff;
+    border:1px solid #e3e6eb;
     border-radius:16px;
     padding:16px;
 }
@@ -195,6 +208,15 @@ canvas{
 </head>
 
 <body>
+
+<nav class="site-nav">
+  <a href="index.html">Dashboard</a>
+  <a href="ai.html">AI insights</a>
+  <a href="funds.html">Mutual funds</a>
+  <a href="charts.html">Charts</a>
+  <a href="news.html" class="active">News radar</a>
+  <a href="dependency-map.html">Dependency map</a>
+</nav>
 
 <h1>🚀 AI Market Radar</h1>
 

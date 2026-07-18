@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>trading-dashboard — dependency map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f7f8fa;
+    --panel:#ffffff;
+    --panel-2:#f7f8fa;
+    --border:#d7dbe2;
+    --border-soft:#e3e6eb;
+    --text:#2b2f38;
+    --text-dim:#6b7280;
+    --text-faint:#94989f;
+    --blue:#3b6ea5; --blue-dim:#e6f0fa;
+    --green:#2f9e6f; --green-dim:#e5f5ee;
+    --amber:#b3781f; --amber-dim:#faf1e0;
+    --gray:#8b949e; --gray-dim:#eef1f5;
+    --red:#c2453f;
+    --mono:'JetBrains Mono', monospace;
+    --sans:'Inter', sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    padding:40px 24px 80px;
+    min-height:100vh;
+  }
+  .wrap{max-width:1240px;margin:0 auto;}
+
+  .site-nav{
+    display:flex; gap:6px; flex-wrap:wrap; justify-content:center;
+    padding:10px 14px; margin:0 0 24px;
+    background:var(--panel); border-bottom:1px solid var(--border-soft);
+  }
+  .site-nav a{
+    font-family:var(--sans);
+    font-size:12px; padding:6px 12px; border-radius:20px;
+    color:var(--text-dim); text-decoration:none; background:var(--gray-dim); border:1px solid transparent;
+  }
+  .site-nav a:hover{ color:var(--text); }
+  .site-nav a.active{ background:var(--blue-dim); color:var(--blue); border-color:var(--blue); }
+
+  header{margin-bottom:36px;border-bottom:1px solid var(--border-soft);padding-bottom:24px;}
+  .eyebrow{
+    font-family:var(--mono);font-size:12px;color:var(--green);
+    text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .eyebrow::before{content:"●";font-size:8px;}
+  h1{font-size:26px;font-weight:700;letter-spacing:-0.01em;margin-bottom:8px;}
+  h1 span{font-family:var(--mono);color:var(--text-dim);font-weight:400;font-size:22px;}
+  .sub{color:var(--text-dim);font-size:14px;line-height:1.6;max-width:640px;}
+
+  .legend{
+    display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;
+  }
+  .legend-item{
+    display:flex;align-items:center;gap:6px;font-family:var(--mono);
+    font-size:11px;color:var(--text-dim);
+    border:1px solid var(--border-soft);border-radius:20px;padding:5px 12px 5px 8px;
+  }
+  .dot{width:8px;height:8px;border-radius:50%;flex:none;}
+  .dot.trigger{background:var(--amber);}
+  .dot.script{background:var(--blue);}
+  .dot.data{background:var(--green);}
+  .dot.page{background:#7c5cbf;}
+  .dot.ext{background:var(--red);}
+
+  .hint{
+    font-family:var(--mono);font-size:11px;color:var(--text-faint);
+    margin-top:14px;
+  }
+
+  .lanes{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(270px, 1fr));
+    gap:20px;
+    align-items:start;
+  }
+  .lane{
+    background:var(--panel);
+    border:1px solid var(--border-soft);
+    border-radius:10px;
+    padding:18px 16px 22px;
+  }
+  .lane-title{
+    font-size:13px;font-weight:600;color:var(--text);
+    display:flex;align-items:center;gap:8px;margin-bottom:4px;
+  }
+  .lane-title i{
+    display:inline-block;width:6px;height:14px;border-radius:2px;
+  }
+  .lane.stocks .lane-title i{background:var(--blue);}
+  .lane.funds .lane-title i{background:var(--green);}
+  .lane.news .lane-title i{background:var(--amber);}
+  .lane.unused .lane-title i{background:var(--gray);}
+  .lane-desc{font-size:11.5px;color:var(--text-faint);margin-bottom:18px;line-height:1.5;}
+
+  .chain{display:flex;flex-direction:column;align-items:stretch;}
+  .connector{
+    width:1px;height:20px;background:var(--border);
+    margin-left:15px;position:relative;
+  }
+  .connector::after{
+    content:"";position:absolute;bottom:-1px;left:-3px;
+    border:4px solid transparent;border-top-color:var(--border);
+  }
+  .connector.branch{height:14px;}
+  .connector-label{
+    font-family:var(--mono);font-size:10px;color:var(--text-faint);
+    margin-left:26px;margin-top:-16px;margin-bottom:2px;
+  }
+
+  .node{
+    border:1px solid var(--border);
+    background:var(--panel-2);
+    border-radius:7px;
+    padding:10px 12px;
+    cursor:pointer;
+    transition:opacity .18s ease, border-color .18s ease, transform .12s ease;
+    display:flex;flex-direction:column;gap:3px;
+  }
+  .node:hover{border-color:var(--text-dim);transform:translateY(-1px);}
+  .node .kind{
+    font-family:var(--mono);font-size:9.5px;letter-spacing:0.07em;
+    text-transform:uppercase;display:flex;align-items:center;gap:5px;
+  }
+  .node .kind .dot{width:6px;height:6px;}
+  .node.trigger .kind{color:var(--amber);}
+  .node.script .kind{color:var(--blue);}
+  .node.data .kind{color:var(--green);}
+  .node.page .kind{color:#7c5cbf;}
+  .node.ext .kind{color:var(--red);}
+  .node .name{font-family:var(--mono);font-size:13px;font-weight:500;}
+  .node .desc{font-size:11px;color:var(--text-dim);line-height:1.4;}
+  .node.ext{border-style:dashed;}
+
+  .fanout{
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .fanrow{display:flex;flex-direction:column;}
+  .fanline{
+    width:1px;height:14px;background:var(--border);margin-left:15px;
+  }
+
+  /* dim/focus state */
+  body.focused .node{opacity:0.28;}
+  body.focused .node.hl{opacity:1;}
+  body.focused .node.hl.self{border-color:var(--text);}
+
+  footer{
+    margin-top:40px;padding-top:20px;border-top:1px solid var(--border-soft);
+    font-family:var(--mono);font-size:11px;color:var(--text-faint);
+  }
+</style>
+</head>
+<body>
+<nav class="site-nav">
+  <a href="index.html">Dashboard</a>
+  <a href="ai.html">AI insights</a>
+  <a href="funds.html">Mutual funds</a>
+  <a href="charts.html">Charts</a>
+  <a href="news.html">News radar</a>
+  <a href="dependency-map.html" class="active">Dependency map</a>
+</nav>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">gurpreet040888/trading-dashboard</div>
+    <h1>File dependency map <span>// what powers each page</span></h1>
+    <p class="sub">Four independent pipelines run on schedule via GitHub Actions, write JSON/CSV into the repo, and the static pages on GitHub Pages read those files directly. Click any file to trace its chain — everything unrelated dims out.</p>
+    <div class="legend">
+      <div class="legend-item"><span class="dot trigger"></span>workflow / cron</div>
+      <div class="legend-item"><span class="dot script"></span>python script</div>
+      <div class="legend-item"><span class="dot data"></span>data file</div>
+      <div class="legend-item"><span class="dot page"></span>web page</div>
+      <div class="legend-item"><span class="dot ext"></span>external / unused</div>
+    </div>
+    <div class="hint">click a node to isolate its chain · click again to clear</div>
+  </header>
+
+  <div class="lanes">
+
+    <!-- STOCKS LANE -->
+    <div class="lane stocks">
+      <div class="lane-title"><i></i>stocks &amp; charts</div>
+      <div class="lane-desc">Your holdings, priced and scored, feeding three dashboard variants plus the AI signal view.</div>
+      <div class="chain">
+        <div class="node trigger" data-id="update.yml" data-group="g1">
+          <div class="kind"><span class="dot trigger"></span>every 6h</div>
+          <div class="name">update.yml</div>
+          <div class="desc">runs fetch_data.py on schedule</div>
+        </div>
+        <div class="connector"></div>
+        <div class="node script" data-id="fetch_data.py" data-group="g1">
+          <div class="kind"><span class="dot script"></span>script</div>
+          <div class="name">backend/fetch_data.py</div>
+          <div class="desc">reads stocks.csv, computes signals</div>
+        </div>
+        <div class="connector"></div>
+        <div class="node data" data-id="data.json" data-group="g1">
+          <div class="kind"><span class="dot data"></span>data</div>
+          <div class="name">data.json</div>
+          <div class="desc">prices, averages, buy/sell signals</div>
+        </div>
+        <div class="fanline"></div>
+        <div class="connector-label">read by 4 pages ↓</div>
+        <div class="fanout">
+          <div class="node page" data-id="index.html" data-group="g1"><div class="kind"><span class="dot page"></span>page</div><div class="name">index.html</div><div class="desc">main dashboard</div></div>
+          <div class="node page" data-id="index_v1.html" data-group="g1"><div class="kind"><span class="dot page"></span>page</div><div class="name">index_v1.html</div><div class="desc">earlier dashboard iteration</div></div>
+          <div class="node page" data-id="index_v3.html" data-group="g1"><div class="kind"><span class="dot page"></span>page</div><div class="name">index_v3.html</div><div class="desc">later dashboard iteration</div></div>
+          <div class="node page" data-id="ai.html" data-group="g1"><div class="kind"><span class="dot page"></span>page</div><div class="name">ai.html</div><div class="desc">AI-scored buy/sell/hold table</div></div>
+        </div>
+      </div>
+
+      <div class="chain" style="margin-top:22px;">
+        <div class="node trigger" data-id="history.yml" data-group="g2">
+          <div class="kind"><span class="dot trigger"></span>daily</div>
+          <div class="name">history.yml</div>
+          <div class="desc">runs generate_history.py</div>
+        </div>
+        <div class="connector"></div>
+        <div class="node script" data-id="generate_history.py" data-group="g2">
+          <div class="kind"><span class="dot script"></span>script</div>
+          <div class="name">backend/generate_history.py</div>
+          <div class="desc">builds 1yr price series</div>
+        </div>
+        <div class="connector"></div>
+        <div class="node data" data-id="historical_prices.json" data-group="g2">
+          <div class="kind"><span class="dot data"></span>data</div>
+          <div class="name">historical_prices.json</div>
+          <div class="desc">per-ticker price history</div>
+        </div>
+        <div class="connector"></div>
+        <div class="node page" data-id="charts.html" data-group="g2">
+          <div class="kind"><span class="dot page"></span>page</div>
+          <div class="name">charts.html</div>
+          <div class="desc">market trend explorer, Chart.js</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FUNDS LANE -->
+    <div class="lane funds">
+      <div class="lane-title"><i></i>mutual funds</div>
+      <div class="lane-desc">Filters ~37k schemes down to ~2.4-2.8k relevant funds, scores them, and lists them with drill-down detail.</div>
+      <div class="chain">
+        <div class="node trigger" data-id="fetch_funds.yml" data-group="g3">
+          <div class="kind"><span class="dot trigger"></span>weekdays 7pm ist</div>
+          <div class="name">fetch_funds.yml</div>
+          <div class="desc">runs fetch_funds.py</div>
+        </div>
+        <div class="connector"></div>
+        <div class="node script" data-id="fetch_funds.py" data-group="g3">
+          <div class="kind"><span class="dot script"></span>script</div>
+          <div class="name">backend/fetch_funds.py</div>
+          <div class="desc">filters, scores, smart-labels funds</div>
+        </div>
+        <div class="connector"></div>
+        <div class="node data" data-id="funds.json" data-group="g3">
+          <div class="kind"><span class="dot data"></span>data</div>
+          <div class="name">funds.json / funds.csv</div>
+          <div class="desc">~4,000 funds, smart score + label</div>
+        </div>
+        <div class="connector"></div>
+        <div class="node page" data-id="funds.html" data-group="g3">
+          <div class="kind"><span class="dot page"></span>page</div>
+          <div class="name">funds.html</div>
+          <div class="desc">virtual-scroll list, top-5 per category</div>
+        </div>
+        <div class="connector"></div>
+        <div class="node page" data-id="fund_detail.html" data-group="g3">
+          <div class="kind"><span class="dot page"></span>page</div>
+          <div class="name">fund_detail.html</div>
+          <div class="desc">opened from funds.html via ?code=</div>
+        </div>
+        <div class="connector"></div>
+        <div class="node ext" data-id="mfapi.in" data-group="g3">
+          <div class="kind"><span class="dot ext"></span>external, runtime</div>
+          <div class="name">api.mfapi.in</div>
+          <div class="desc">called live in-browser for NAV + holdings, not stored in repo</div>
+        </div>
+      </div>
+      <div class="connector-label" style="margin-top:14px;">also documented in ↓</div>
+      <div class="node data" data-id="README_FUNDS.md" data-group="g3" style="margin-top:6px;">
+        <div class="kind"><span class="dot data"></span>docs</div>
+        <div class="name">README_FUNDS.md</div>
+        <div class="desc">explains the funds workstream</div>
+      </div>
+    </div>
+
+    <!-- NEWS LANE -->
+    <div class="lane news">
+      <div class="lane-title"><i></i>news radar</div>
+      <div class="lane-desc">Momentum and news-catalyst scoring layered on top of your ticker list.</div>
+      <div class="chain">
+        <div class="node trigger" data-id="news-radar.yml" data-group="g4">
+          <div class="kind"><span class="dot trigger"></span>every 4h</div>
+          <div class="name">news-radar.yml</div>
+          <div class="desc">runs news_scanner.py</div>
+        </div>
+        <div class="connector"></div>
+        <div class="node script" data-id="news_scanner.py" data-group="g4">
+          <div class="kind"><span class="dot script"></span>script</div>
+          <div class="name">backend/news_scanner.py</div>
+          <div class="desc">momentum, trend, volume, catalysts</div>
+        </div>
+        <div class="connector"></div>
+        <div class="node data" data-id="news_data.json" data-group="g4">
+          <div class="kind"><span class="dot data"></span>data</div>
+          <div class="name">news_data.json</div>
+          <div class="desc">per-ticker news-driven scores</div>
+        </div>
+        <div class="connector"></div>
+        <div class="node page" data-id="news.html" data-group="g4">
+          <div class="kind"><span class="dot page"></span>page</div>
+          <div class="name">news.html</div>
+          <div class="desc">news radar view</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UNUSED / SUPPORT LANE -->
+    <div class="lane unused">
+      <div class="lane-title"><i></i>standalone / support</div>
+      <div class="lane-desc">Not part of the GitHub Pages pipeline — a local Flask alternative and repo inputs.</div>
+      <div class="chain">
+        <div class="node data" data-id="stocks.csv" data-group="g5">
+          <div class="kind"><span class="dot data"></span>input</div>
+          <div class="name">stocks.csv</div>
+          <div class="desc">your holdings — feeds fetch_data.py</div>
+        </div>
+        <div class="connector"></div>
+        <div class="node script" data-id="app.py" data-group="g5">
+          <div class="kind"><span class="dot script"></span>script</div>
+          <div class="name">backend/app.py</div>
+          <div class="desc">Flask server, imports fetch_data.py, serves /data — separate from the GitHub Actions pipeline</div>
+        </div>
+      </div>
+      <div class="connector-label" style="margin-top:14px;">shared dependency ↓</div>
+      <div class="node data" data-id="requirements.txt" data-group="g5" style="margin-top:6px;">
+        <div class="kind"><span class="dot data"></span>config</div>
+        <div class="name">backend/requirements.txt</div>
+        <div class="desc">python deps for all backend scripts</div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>trading-dashboard — 24 files across 4 pipelines · generated from repo contents</footer>
+</div>
+
+<script>
+  const adjacency = {
+    "update.yml": ["fetch_data.py","data.json","index.html","index_v1.html","index_v3.html","ai.html"],
+    "fetch_data.py": ["update.yml","data.json","index.html","index_v1.html","index_v3.html","ai.html","stocks.csv","app.py"],
+    "data.json": ["update.yml","fetch_data.py","index.html","index_v1.html","index_v3.html","ai.html"],
+    "index.html": ["update.yml","fetch_data.py","data.json"],
+    "index_v1.html": ["update.yml","fetch_data.py","data.json"],
+    "index_v3.html": ["update.yml","fetch_data.py","data.json"],
+    "ai.html": ["update.yml","fetch_data.py","data.json"],
+
+    "history.yml": ["generate_history.py","historical_prices.json","charts.html"],
+    "generate_history.py": ["history.yml","historical_prices.json","charts.html"],
+    "historical_prices.json": ["history.yml","generate_history.py","charts.html"],
+    "charts.html": ["history.yml","generate_history.py","historical_prices.json"],
+
+    "fetch_funds.yml": ["fetch_funds.py","funds.json","funds.html","fund_detail.html","mfapi.in","README_FUNDS.md"],
+    "fetch_funds.py": ["fetch_funds.yml","funds.json","funds.html","fund_detail.html","mfapi.in"],
+    "funds.json": ["fetch_funds.yml","fetch_funds.py","funds.html","fund_detail.html"],
+    "funds.html": ["fetch_funds.yml","fetch_funds.py","funds.json","fund_detail.html"],
+    "fund_detail.html": ["funds.html","fetch_funds.yml","fetch_funds.py","funds.json","mfapi.in"],
+    "mfapi.in": ["fund_detail.html"],
+    "README_FUNDS.md": ["fetch_funds.yml","fetch_funds.py","funds.json","funds.html"],
+
+    "news-radar.yml": ["news_scanner.py","news_data.json","news.html"],
+    "news_scanner.py": ["news-radar.yml","news_data.json","news.html"],
+    "news_data.json": ["news-radar.yml","news_scanner.py","news.html"],
+    "news.html": ["news-radar.yml","news_scanner.py","news_data.json"],
+
+    "stocks.csv": ["fetch_data.py","app.py"],
+    "app.py": ["fetch_data.py","stocks.csv","requirements.txt"],
+    "requirements.txt": ["app.py"]
+  };
+
+  let active = null;
+  document.querySelectorAll('.node').forEach(node => {
+    node.addEventListener('click', () => {
+      const id = node.dataset.id;
+      document.querySelectorAll('.node').forEach(n => n.classList.remove('hl','self'));
+      if (active === id) {
+        active = null;
+        document.body.classList.remove('focused');
+        return;
+      }
+      active = id;
+      document.body.classList.add('focused');
+      node.classList.add('hl','self');
+      (adjacency[id] || []).forEach(relId => {
+        document.querySelectorAll(`[data-id="${relId}"]`).forEach(n => n.classList.add('hl'));
+      });
+    });
+  });
+</script>
+</body>
+</html>

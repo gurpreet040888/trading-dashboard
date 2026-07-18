@@ -6,16 +6,16 @@
 <title>Fund Holdings · MF Tracker India</title>
 <style>
   :root {
-    --bg: #0d1117;
-    --surface: #161b22;
-    --surface2: #21262d;
-    --border: #30363d;
-    --text: #e6edf3;
-    --text-muted: #8b949e;
-    --accent: #f0b429;
-    --accent2: #58a6ff;
-    --green: #3fb950;
-    --red: #f85149;
+    --bg: #f7f8fa;
+    --surface: #ffffff;
+    --surface2: #f1f3f6;
+    --border: #e3e6eb;
+    --text: #2b2f38;
+    --text-muted: #6b7280;
+    --accent: #b3781f;
+    --accent2: #3b6ea5;
+    --green: #2f9e6f;
+    --red: #c2453f;
     --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
     --font-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
   }
@@ -36,11 +36,11 @@
     text-decoration: none;
     font-size: 13px;
     padding: 5px 12px;
-    border: 1px solid rgba(88,166,255,0.3);
+    border: 1px solid rgba(59,110,165,0.3);
     border-radius: 6px;
     white-space: nowrap;
   }
-  .back-btn:hover { background: rgba(88,166,255,0.08); }
+  .back-btn:hover { background: rgba(59,110,165,0.08); }
   .header-title { font-size: 15px; font-weight: 700; color: var(--text); }
 
   .page { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
@@ -397,7 +397,7 @@ function drawDonut() {
     // donut hole
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, 2 * Math.PI);
-    ctx.fillStyle = '#161b22';
+    ctx.fillStyle = '#ffffff';
     ctx.fill();
     angle += slice;
   });

@@ -7,8 +7,8 @@
   <style>
     body {
       font-family: Arial;
-      background: #020617;
-      color: #e2e8f0;
+      background: #f7f8fa;
+      color: #2b2f38;
       padding: 20px;
     }
 
@@ -27,9 +27,10 @@
     .card {
       flex: 1;
       min-width: 200px;
-      background: #0f172a;
+      background: #ffffff;
       padding: 15px;
       border-radius: 10px;
+      border: 1px solid #e3e6eb;
     }
 
     .big {
@@ -38,8 +39,8 @@
       font-weight: bold;
     }
 
-    .positive { color: #22c55e; }
-    .negative { color: #ef4444; }
+    .positive { color: #1f8a54; }
+    .negative { color: #c2453f; }
 
     table {
       width: 100%;
@@ -48,7 +49,7 @@
     }
 
     th {
-      background: #1e293b;
+      background: #eef1f5;
       padding: 8px;
       font-size: 11px;
     }
@@ -56,7 +57,7 @@
     td {
       padding: 6px;
       text-align: center;
-      border-bottom: 1px solid #334155;
+      border-bottom: 1px solid #e9ebf0;
       font-size: 11px;
     }
 
@@ -65,9 +66,9 @@
       height: 40px !important;
     }
 
-    .buy { color:#22c55e; font-weight:bold }
-    .sell { color:#ef4444; font-weight:bold }
-    .hold { color:#eab308 }
+    .buy { color:#1f8a54; font-weight:bold }
+    .sell { color:#c2453f; font-weight:bold }
+    .hold { color:#b3781f }
 
     .avg-box {
       padding: 4px;
@@ -77,14 +78,14 @@
 
     .bar {
       height: 6px;
-      background: #1e293b;
+      background: #eef1f5;
       border-radius: 5px;
       margin-top: 4px;
     }
 
     .bar-fill {
       height: 100%;
-      background: #22c55e;
+      background: #2f9e6f;
       border-radius: 5px;
     }
   </style>
@@ -150,9 +151,9 @@ function pct(curr, avg){
 
 function avgBox(avg, pctVal){
   let val=parseFloat(pctVal)
-  let color = val>=0 ? "#22c55e" : "#ef4444"
+  let color = val>=0 ? "#2f9e6f" : "#c2453f"
 
-  return `<div class="avg-box" style="background:rgba(255,255,255,0.05);border-left:3px solid ${color}">
+  return `<div class="avg-box" style="background:rgba(20,20,30,0.03);border-left:3px solid ${color}">
     ${avg}<br>(${pctVal}%)
   </div>`
 }

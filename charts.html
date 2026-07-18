@@ -10,15 +10,27 @@
 
 body{
     font-family:Arial,sans-serif;
-    background:#f5f7fa;
+    background:#f7f8fa;
     margin:0;
     padding:20px;
-    color:#334155;
+    color:#2b2f38;
 }
 
 h1{
     margin-top:0;
 }
+
+.site-nav{
+    display:flex; gap:6px; flex-wrap:wrap; justify-content:center;
+    padding:10px 14px; margin:-20px -20px 20px;
+    background:#ffffff; border-bottom:1px solid #e3e6eb;
+}
+.site-nav a{
+    font-size:12px; padding:6px 12px; border-radius:20px;
+    color:#4b5568; text-decoration:none; background:#f1f3f6; border:1px solid transparent;
+}
+.site-nav a:hover{ background:#e8ebf0; color:#2b2f38; }
+.site-nav a.active{ background:#dbe7fa; color:#2b5a9e; border-color:#c3d8f5; }
 
 .container{
     display:grid;
@@ -28,10 +40,10 @@ h1{
 
 .card{
     background:white;
-    border:1px solid #e2e8f0;
+    border:1px solid #e3e6eb;
     border-radius:12px;
     padding:15px;
-    box-shadow:0 1px 4px rgba(0,0,0,.05);
+    box-shadow:0 1px 4px rgba(20,20,30,.04);
 }
 
 #selectorCard{
@@ -43,50 +55,103 @@ h1{
 
 button{
     padding:8px 14px;
-    border:1px solid #cbd5e1;
+    border:1px solid #d7dbe2;
     background:white;
     cursor:pointer;
     border-radius:6px;
     margin-right:5px;
+    color:#2b2f38;
 }
 
 button:hover{
-    background:#f1f5f9;
+    background:#f1f3f6;
 }
 
 input{
     width:100%;
     padding:10px;
-    border:1px solid #cbd5e1;
+    border:1px solid #d7dbe2;
     border-radius:6px;
-    margin-bottom:15px;
+    margin-bottom:10px;
+    box-sizing:border-box;
+}
+
+.select-row{
+    display:flex;
+    gap:6px;
+    margin-bottom:10px;
+}
+
+.select-row button{
+    flex:1;
+    padding:6px 8px;
+    font-size:12px;
+    margin-right:0;
+}
+
+.stock-list{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1px 10px;
 }
 
 .stock-item{
-    padding:4px 0;
+    padding:2px 0;
+    font-size:11.5px;
+    line-height:1.5;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.stock-item label{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    cursor:pointer;
+}
+
+.stock-item input[type="checkbox"]{
+    width:12px;
+    height:12px;
+    margin:0;
+    flex:none;
+}
+
+.selected-count{
+    font-size:11px;
+    color:#6b7280;
+    margin-bottom:8px;
 }
 
 .cards{
     margin-top:30px;
     display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
     gap:15px;
 }
 
 .stock-card{
     background:white;
-    border:1px solid #e2e8f0;
+    border:1px solid #e3e6eb;
     border-radius:12px;
     padding:10px;
 }
 
 .stock-card canvas{
-    height:120px !important;
+    height:130px !important;
 }
 
 .mode-active{
-    background:#2563eb;
+    background:#3b6ea5;
     color:white;
+    border-color:#3b6ea5;
+}
+
+.range-active{
+    background:#eef1f5;
+    border-color:#b9c2cf;
+    font-weight:bold;
 }
 
 </style>
@@ -94,16 +159,25 @@ input{
 
 <body>
 
+<nav class="site-nav">
+  <a href="index.html">Dashboard</a>
+  <a href="ai.html">AI insights</a>
+  <a href="funds.html">Mutual funds</a>
+  <a href="charts.html" class="active">Charts</a>
+  <a href="news.html">News radar</a>
+  <a href="dependency-map.html">Dependency map</a>
+</nav>
+
 <h1>📈 Market Trend Explorer</h1>
 
-<div style="margin-bottom:15px;">
+<div style="margin-bottom:15px;" id="rangeButtons">
 
-<button onclick="setRange('1mo')">1M</button>
-<button onclick="setRange('3mo')">3M</button>
-<button onclick="setRange('6mo')">6M</button>
-<button onclick="setRange('1y')">1Y</button>
-<button onclick="setRange('2y')">2Y</button>
-<button onclick="setRange('3y')">3Y</button>
+<button data-range="1mo" onclick="setRange('1mo')">1M</button>
+<button data-range="3mo" onclick="setRange('3mo')">3M</button>
+<button data-range="6mo" onclick="setRange('6mo')">6M</button>
+<button data-range="1y" onclick="setRange('1y')">1Y</button>
+<button data-range="2y" class="range-active" onclick="setRange('2y')">2Y</button>
+<button data-range="3y" onclick="setRange('3y')">3Y</button>
 
 &nbsp;&nbsp;&nbsp;
 
@@ -135,7 +209,14 @@ Raw Price
  placeholder="Search stocks..."
  onkeyup="filterStocks()">
 
-<div id="stockList"></div>
+<div class="select-row">
+<button onclick="selectAll()">Select all</button>
+<button onclick="selectNone()">Select none</button>
+</div>
+
+<div class="selected-count" id="selectedCount"></div>
+
+<div id="stockList" class="stock-list"></div>
 
 </div>
 
@@ -154,6 +235,7 @@ let selected=[];
 let range="2y";
 let mode="normalized";
 let mainChart;
+let miniCharts={};
 
 fetch("historical_prices.json")
 .then(r=>r.json())
@@ -176,23 +258,24 @@ function buildStockList(){
 
         html += `
         <div class="stock-item">
-
         <label>
-
         <input
             type="checkbox"
             value="${ticker}"
             onchange="toggleStock(this)">
-
         ${ticker}
-
         </label>
-
         </div>
         `;
     });
 
     stockList.innerHTML=html;
+    updateSelectedCount();
+}
+
+function updateSelectedCount(){
+    document.getElementById("selectedCount").innerText =
+      selected.length + " of " + Object.keys(stockData).length + " selected";
 }
 
 function filterStocks(){
@@ -216,6 +299,29 @@ function filterStocks(){
     });
 }
 
+function selectAll(){
+
+    document.querySelectorAll("#stockList input[type='checkbox']")
+    .forEach(cb=>{
+        cb.checked = true;
+        if(!selected.includes(cb.value)) selected.push(cb.value);
+    });
+
+    updateSelectedCount();
+    renderMainChart();
+}
+
+function selectNone(){
+
+    document.querySelectorAll("#stockList input[type='checkbox']")
+    .forEach(cb=> cb.checked = false);
+
+    selected = [];
+
+    updateSelectedCount();
+    renderMainChart();
+}
+
 function toggleStock(cb){
 
     if(cb.checked){
@@ -230,6 +336,7 @@ function toggleStock(cb){
         );
     }
 
+    updateSelectedCount();
     renderMainChart();
 }
 
@@ -237,7 +344,11 @@ function setRange(r){
 
     range=r;
 
+    document.querySelectorAll("#rangeButtons button[data-range]")
+    .forEach(b=> b.classList.toggle("range-active", b.dataset.range===r));
+
     renderMainChart();
+    drawMiniCharts();
 }
 
 function setMode(m){
@@ -268,6 +379,18 @@ function getLength(){
     }
 
     return 504;
+}
+
+function rangeLabel(){
+    switch(range){
+        case "1mo": return "1M";
+        case "3mo": return "3M";
+        case "6mo": return "6M";
+        case "1y": return "1Y";
+        case "2y": return "2Y";
+        case "3y": return "3Y";
+    }
+    return range;
 }
 
 function renderMainChart(){
@@ -348,6 +471,21 @@ function renderMainChart(){
                 legend:{
                     position:'top'
                 }
+            },
+
+            scales:{
+                x:{
+                    ticks:{ maxTicksLimit:8, font:{size:10} },
+                    title:{ display:true, text:"Date", font:{size:11} }
+                },
+                y:{
+                    ticks:{ font:{size:10} },
+                    title:{
+                        display:true,
+                        text: mode==="normalized" ? "Change since start (%)" : "Price",
+                        font:{size:11}
+                    }
+                }
             }
         }
     });
@@ -389,30 +527,37 @@ function drawMiniCharts(){
         const stock=
         stockData[ticker];
 
+        const canvasId = "mini_"+ticker.replace(/\./g,'_');
+
         const canvas=
-        document.getElementById(
-          "mini_"+
-          ticker.replace(/\./g,'_')
-        );
+        document.getElementById(canvasId);
 
         if(!canvas) return;
 
-        new Chart(canvas,{
+        const prices = stock.prices.slice(-getLength());
+        const dates = (stock.dates || []).slice(-getLength());
+
+        if(miniCharts[canvasId]){
+            miniCharts[canvasId].destroy();
+        }
+
+        miniCharts[canvasId] = new Chart(canvas,{
 
             type:"line",
 
             data:{
 
-                labels:
-                stock.prices.map((_,i)=>i),
+                labels: dates.length ? dates : prices.map((_,i)=>i),
 
                 datasets:[{
 
-                    data:stock.prices,
+                    data:prices,
 
                     pointRadius:0,
 
-                    borderWidth:1.5
+                    borderWidth:1.5,
+
+                    borderColor:"#3b6ea5"
                 }]
             },
 
@@ -421,12 +566,36 @@ function drawMiniCharts(){
                 responsive:true,
 
                 plugins:{
-                    legend:false
+                    legend:false,
+                    title:{
+                        display:true,
+                        text:rangeLabel(),
+                        font:{size:9},
+                        color:"#6b7280",
+                        padding:{bottom:2}
+                    }
                 },
 
                 scales:{
-                    x:{display:false},
-                    y:{display:false}
+                    x:{
+                        display:true,
+                        ticks:{
+                            maxTicksLimit:3,
+                            font:{size:8},
+                            color:"#6b7280",
+                            maxRotation:0
+                        },
+                        grid:{ display:false }
+                    },
+                    y:{
+                        display:true,
+                        ticks:{
+                            maxTicksLimit:3,
+                            font:{size:8},
+                            color:"#6b7280"
+                        },
+                        grid:{ color:"#eef1f5" }
+                    }
                 }
             }
         });

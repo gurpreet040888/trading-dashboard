@@ -6,20 +6,20 @@
 <title>MF Tracker India</title>
 <style>
   :root {
-    --bg: #0d1117;
-    --surface: #161b22;
-    --surface2: #21262d;
-    --border: #30363d;
-    --text: #e6edf3;
-    --text-muted: #8b949e;
-    --accent: #f0b429;
-    --accent2: #58a6ff;
-    --green: #3fb950;
-    --red: #f85149;
-    --strong: #3fb950;
-    --watch: #d29922;
-    --avoid: #f85149;
-    --row-hover: #1c2128;
+    --bg: #f7f8fa;
+    --surface: #ffffff;
+    --surface2: #f1f3f6;
+    --border: #e3e6eb;
+    --text: #2b2f38;
+    --text-muted: #6b7280;
+    --accent: #b3781f;
+    --accent2: #3b6ea5;
+    --green: #2f9e6f;
+    --red: #c2453f;
+    --strong: #2f9e6f;
+    --watch: #b3781f;
+    --avoid: #c2453f;
+    --row-hover: #f3f5f8;
     --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
     --font-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
   }
@@ -46,7 +46,7 @@
     gap: 12px;
     flex-wrap: wrap;
     position: sticky;
-    top: 0;
+    top: 41px;
     z-index: 100;
   }
   .site-header .logo {
@@ -69,7 +69,7 @@
     gap: 10px;
     flex-wrap: wrap;
     position: sticky;
-    top: 53px;
+    top: 94px;
     z-index: 99;
   }
   .controls input[type="text"] {
@@ -370,9 +370,30 @@
     .top5-wrap { padding: 14px; }
     .cards-grid { grid-template-columns: 1fr; }
   }
+
+  .site-nav{
+    display:flex; gap:6px; flex-wrap:wrap; justify-content:center;
+    padding:8px 14px; background:var(--surface); border-bottom:1px solid var(--border);
+    position: sticky; top:0; z-index: 101;
+  }
+  .site-nav a{
+    font-size:12px; padding:6px 12px; border-radius:20px;
+    color:var(--text-muted); text-decoration:none; background:var(--surface2); border:1px solid transparent;
+  }
+  .site-nav a:hover{ color:var(--text); }
+  .site-nav a.active{ background:#dbe7fa; color:#2b5a9e; border-color:#c3d8f5; }
 </style>
 </head>
 <body>
+
+<nav class="site-nav">
+  <a href="index.html">Dashboard</a>
+  <a href="ai.html">AI insights</a>
+  <a href="funds.html" class="active">Mutual funds</a>
+  <a href="charts.html">Charts</a>
+  <a href="news.html">News radar</a>
+  <a href="dependency-map.html">Dependency map</a>
+</nav>
 
 <header class="site-header">
   <div class="logo">📊 MF Tracker India <span>All Mutual Funds · Smart Score · Daily Data</span></div>

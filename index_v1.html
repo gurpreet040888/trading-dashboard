@@ -6,8 +6,8 @@
   <style>
     body {
       font-family: Arial;
-      background: #0f172a;
-      color: white;
+      background: #f7f8fa;
+      color: #2b2f38;
       padding: 20px;
     }
 
@@ -19,13 +19,14 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
-      background: #1e293b;
+      background: #ffffff;
       border-radius: 10px;
       overflow: hidden;
+      border: 1px solid #e3e6eb;
     }
 
     th {
-      background: #334155;
+      background: #eef1f5;
       padding: 12px;
       text-align: center;
     }
@@ -33,15 +34,15 @@
     td {
       padding: 10px;
       text-align: center;
-      border-bottom: 1px solid #475569;
+      border-bottom: 1px solid #e9ebf0;
     }
 
     tr:hover {
-      background: #334155;
+      background: #f3f5f8;
     }
 
-    .green { color: #22c55e; font-weight: bold; }
-    .red { color: #ef4444; font-weight: bold; }
+    .green { color: #1f8a54; font-weight: bold; }
+    .red { color: #c2453f; font-weight: bold; }
 
     #portfolioSummary {
       margin-top: 10px;
@@ -52,15 +53,16 @@
     #top5 {
       margin: 10px auto;
       width: 60%;
-      background: #1e293b;
+      background: #ffffff;
       padding: 10px;
       border-radius: 10px;
+      border: 1px solid #e3e6eb;
     }
 
     #lastUpdated {
       text-align: center;
       margin-top: 10px;
-      color: #94a3b8;
+      color: #6b7280;
     }
   </style>
 </head>
@@ -102,19 +104,19 @@ function getColor(diff) {
   if (abs < 0.05) return "";
 
   if (diff > 0) {
-    if (abs < 0.10) return "rgba(34,197,94,0.2)";
-    if (abs < 0.20) return "rgba(34,197,94,0.4)";
-    return "rgba(34,197,94,0.7)";
+    if (abs < 0.10) return "rgba(47,158,111,0.10)";
+    if (abs < 0.20) return "rgba(47,158,111,0.18)";
+    return "rgba(47,158,111,0.28)";
   } else {
-    if (abs < 0.10) return "rgba(239,68,68,0.2)";
-    if (abs < 0.20) return "rgba(239,68,68,0.4)";
-    return "rgba(239,68,68,0.7)";
+    if (abs < 0.10) return "rgba(194,69,63,0.08)";
+    if (abs < 0.20) return "rgba(194,69,63,0.15)";
+    return "rgba(194,69,63,0.24)";
   }
 }
 
 function getBorder(diff) {
   if (Math.abs(diff) < 0.10) return "";
-  return diff > 0 ? "4px solid #22c55e" : "4px solid #ef4444";
+  return diff > 0 ? "4px solid #2f9e6f" : "4px solid #c2453f";
 }
 
 async function loadData() {
