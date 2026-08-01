@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Calculators</title>
+
+<style>
+
+body{
+    font-family:Arial,sans-serif;
+    background:#f7f8fa;
+    margin:0;
+    padding:20px;
+    color:#2b2f38;
+}
+
+h1{
+    margin-top:0;
+}
+
+.site-nav{
+    display:flex; gap:6px; flex-wrap:wrap; justify-content:center; align-items:center;
+    padding:10px 14px; margin:-20px -20px 20px;
+    background:#ffffff; border-bottom:1px solid #e3e6eb;
+}
+.site-nav a{
+    font-size:12px; padding:6px 12px; border-radius:20px;
+    color:#4b5568; text-decoration:none; background:#f1f3f6; border:1px solid transparent;
+    cursor:pointer; display:inline-block;
+}
+.site-nav a:hover{ background:#e8ebf0; color:#2b2f38; }
+.site-nav a.active{ background:#dbe7fa; color:#2b5a9e; border-color:#c3d8f5; }
+
+.sub-nav{
+    display:flex; gap:6px; flex-wrap:wrap; justify-content:center;
+    padding:8px 14px; margin:0 -20px 20px;
+    background:#f1f3f6; border-bottom:1px solid #e3e6eb;
+}
+.sub-nav-item{
+    font-size:13px; padding:7px 16px; border-radius:20px;
+    color:#4b5568; text-decoration:none; background:#ffffff; border:1px solid #d7dbe2;
+    cursor:pointer;
+}
+.sub-nav-item:hover{ border-color:#b9c2cf; color:#2b2f38; }
+.sub-nav-item.active{
+    background:#3b6ea5; color:white; border-color:#3b6ea5;
+}
+
+.view-toggle{
+    display:inline-flex;
+    border:1px solid #d7dbe2;
+    border-radius:8px;
+    overflow:hidden;
+    margin-bottom:12px;
+}
+.view-toggle-btn{
+    padding:7px 16px;
+    border:none;
+    background:white;
+    cursor:pointer;
+    font-size:12.5px;
+    color:#2b2f38;
+}
+.view-toggle-btn + .view-toggle-btn{
+    border-left:1px solid #d7dbe2;
+}
+.view-toggle-btn.active{
+    background:#3b6ea5;
+    color:white;
+}
+
+.calc-panel{
+    display:none;
+}
+
+.calc-panel.active{
+    display:block;
+}
+
+.layout{
+    display:grid;
+    grid-template-columns:280px 1fr;
+    gap:20px;
+    align-items:start;
+}
+
+.card{
+    background:white;
+    border:1px solid #e3e6eb;
+    border-radius:12px;
+    padding:18px;
+    box-shadow:0 1px 4px rgba(20,20,30,.04);
+}
+
+.field{
+    margin-bottom:14px;
+}
+
+.field label{
+    display:block;
+    font-size:12px;
+    color:#6b7280;
+    margin-bottom:5px;
+}
+
+.field input,
+.field select{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid #d7dbe2;
+    border-radius:6px;
+    box-sizing:border-box;
+    font-size:14px;
+    color:#2b2f38;
+}
+
+.summary-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:12px;
+    margin-bottom:18px;
+}
+
+.summary-card{
+    background:#f1f3f6;
+    border-radius:10px;
+    padding:12px 14px;
+}
+
+.summary-card .label{
+    font-size:11px;
+    color:#6b7280;
+    margin-bottom:4px;
+}
+
+.summary-card .value{
+    font-size:17px;
+    font-weight:bold;
+}
+
+.summary-card.good .value{ color:#1f8a54; }
+.summary-card.warn .value{ color:#c2453f; }
+
+.table-wrap{
+    max-height:520px;
+    overflow:auto;
+    border:1px solid #e3e6eb;
+    border-radius:10px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    position:sticky;
+    top:0;
+    background:#eef1f5;
+    padding:10px;
+    font-size:12px;
+    text-align:right;
+    border-bottom:1px solid #e3e6eb;
+    white-space:nowrap;
+}
+
+th:first-child, td:first-child{
+    text-align:left;
+}
+
+td{
+    padding:8px 10px;
+    text-align:right;
+    font-size:12.5px;
+    border-bottom:1px solid #e9ebf0;
+}
+
+tr.depleted td{
+    color:#c2453f;
+    font-weight:bold;
+    background:#fdf2f1;
+}
+
+tr:last-child td{
+    font-weight:bold;
+    background:#f3f5f8;
+}
+
+.note{
+    font-size:11.5px;
+    color:#6b7280;
+    margin-top:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<nav class="site-nav">
+  <a href="index.html">Dashboard</a>
+  <a href="ai.html">AI insights</a>
+  <a href="funds.html">Mutual funds</a>
+  <a href="charts.html">Charts</a>
+  <a href="news.html">News radar</a>
+  <a href="dependency-map.html">Dependency map</a>
+  <a href="calculators.html" class="active">Calculators</a>
+</nav>
+
+<nav class="sub-nav" id="calcSubNav">
+  <a href="#" class="sub-nav-item" id="tabBtnRd" onclick="showTab('rd');return false;">Recurring Deposit</a>
+  <a href="#" class="sub-nav-item" id="tabBtnRet" onclick="showTab('retirement');return false;">Retirement</a>
+  <a href="#" class="sub-nav-item" id="tabBtnLoan" onclick="showTab('loan');return false;">Loan vs Investment</a>
+</nav>
+
+<h1>🧮 Calculators</h1>
+
+<!-- ================= RD CALCULATOR ================= -->
+<div class="calc-panel" id="panelRd">
+
+  <div class="layout">
+
+    <div class="card">
+
+      <div class="field">
+        <label>Deposit amount per period (₹)</label>
+        <input type="number" id="rdPrincipal" value="5000" min="0" oninput="calcRD()">
+      </div>
+
+      <div class="field">
+        <label>Duration (years, up to 50)</label>
+        <input type="number" id="rdYears" value="5" min="1" max="50" oninput="calcRD()">
+      </div>
+
+      <div class="field">
+        <label>Rate of interest (% p.a.)</label>
+        <input type="number" id="rdRoi" value="7.5" step="0.1" min="0" oninput="calcRD()">
+      </div>
+
+      <div class="field">
+        <label>Recurrence period</label>
+        <select id="rdRecurrence" onchange="calcRD()">
+          <option value="12">Monthly</option>
+          <option value="4">Quarterly</option>
+          <option value="1">Annually</option>
+        </select>
+      </div>
+
+    </div>
+
+    <div>
+
+      <div class="summary-grid" id="rdSummary"></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th>Deposits this year (₹)</th>
+              <th>Interest this year (₹)</th>
+              <th>Balance / maturity so far (₹)</th>
+            </tr>
+          </thead>
+          <tbody id="rdTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="note">Interest is applied at the end of each deposit period on the running balance (deposit-then-compound), compounded at the recurrence frequency selected.</div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ================= RETIREMENT CALCULATOR ================= -->
+<div class="calc-panel" id="panelRetirement">
+
+  <div class="layout">
+
+    <div class="card">
+
+      <div class="field">
+        <label>Lumpsum / corpus amount (₹)</label>
+        <input type="number" id="retCorpus" value="5000000" min="0" oninput="calcRetirement()">
+      </div>
+
+      <div class="field">
+        <label>Current age</label>
+        <input type="number" id="retCurrentAge" value="35" min="0" max="100" oninput="calcRetirement()">
+      </div>
+
+      <div class="field">
+        <label>Monthly pension required (₹)</label>
+        <input type="number" id="retPension" value="30000" min="0" oninput="calcRetirement()">
+      </div>
+
+      <div class="field">
+        <label>Rate of interest (% p.a.)</label>
+        <input type="number" id="retRoi" value="7" step="0.1" min="0" oninput="calcRetirement()">
+      </div>
+
+      <div class="field">
+        <label>Age when pension starts</label>
+        <input type="number" id="retStartAge" value="60" min="0" max="100" oninput="calcRetirement()">
+      </div>
+
+      <div class="field">
+        <label>Number of years pension is required</label>
+        <input type="number" id="retYears" value="25" min="1" max="60" oninput="calcRetirement()">
+      </div>
+
+    </div>
+
+    <div>
+
+      <div class="summary-grid" id="retSummary"></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th>Age</th>
+              <th>Phase</th>
+              <th>Interest earned (₹)</th>
+              <th>Pension withdrawn (₹)</th>
+              <th>Remaining balance (₹)</th>
+            </tr>
+          </thead>
+          <tbody id="retTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="note">From your current age to the pension start age, the corpus simply compounds — no withdrawals. From the start age onward, each month interest accrues first, then the monthly pension is withdrawn. A row is flagged if the corpus runs out before the tenure ends.</div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ================= LOAN VS INVESTMENT CALCULATOR ================= -->
+<div class="calc-panel" id="panelLoan">
+
+  <div class="layout">
+
+    <div class="card">
+
+      <div class="field">
+        <label>Purchase price / loan principal (₹)</label>
+        <input type="number" id="loanPrincipal" value="2000000" min="0" oninput="calcLoan()">
+      </div>
+
+      <div class="field">
+        <label>Loan interest rate (% p.a.)</label>
+        <input type="number" id="loanRoi" value="8" step="0.1" min="0" oninput="calcLoan()">
+      </div>
+
+      <div class="field">
+        <label>Amount to invest instead (₹)</label>
+        <input type="number" id="loanInvestAmount" value="2000000" min="0" oninput="calcLoan()">
+      </div>
+
+      <div class="field">
+        <label>Investment return (% p.a.)</label>
+        <input type="number" id="loanInvestRoi" value="6" step="0.1" min="0" oninput="calcLoan()">
+      </div>
+
+      <div class="field">
+        <label>Tenure (years)</label>
+        <input type="number" id="loanTenure" value="5" min="1" max="30" oninput="calcLoan()">
+      </div>
+
+    </div>
+
+    <div>
+
+      <div class="summary-grid" id="loanSummary"></div>
+
+      <div class="view-toggle">
+        <button class="view-toggle-btn active" id="loanViewMonthly" onclick="setLoanView('monthly')">Monthly</button>
+        <button class="view-toggle-btn" id="loanViewYearly" onclick="setLoanView('yearly')">Yearly</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead id="loanTableHead">
+            <tr>
+              <th>Month</th>
+              <th>EMI (₹)</th>
+              <th>Interest paid (₹)</th>
+              <th>Principal repaid (₹)</th>
+              <th>Loan balance (₹)</th>
+              <th>Investment value (₹)</th>
+              <th>Net position (₹)</th>
+            </tr>
+          </thead>
+          <tbody id="loanTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="note">Assumes you buy the item either way — the only choice is whether you pay cash upfront, or take the loan and keep your cash invested. "Loan balance" is the reducing EMI-loan outstanding; "Investment value" is the invested amount compounding at the investment rate; "Net position" = Investment value − Loan balance, i.e. what you'd be left with if you settled the loan from the investment right then. This ignores taxes on loan interest deductions and on investment gains.</div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+function fmt(n){
+    return "₹" + Math.round(n).toLocaleString('en-IN');
+}
+
+function showTab(tab){
+
+    document.getElementById('panelRd').classList.toggle('active', tab==='rd');
+    document.getElementById('panelRetirement').classList.toggle('active', tab==='retirement');
+    document.getElementById('panelLoan').classList.toggle('active', tab==='loan');
+
+    document.getElementById('tabBtnRd').classList.toggle('active', tab==='rd');
+    document.getElementById('tabBtnRet').classList.toggle('active', tab==='retirement');
+    document.getElementById('tabBtnLoan').classList.toggle('active', tab==='loan');
+
+    if(tab==='rd'){
+        location.hash = 'rd';
+        calcRD();
+    }else if(tab==='retirement'){
+        location.hash = 'retirement';
+        calcRetirement();
+    }else{
+        location.hash = 'loan';
+        calcLoan();
+    }
+}
+
+function calcRD(){
+
+    const principal = parseFloat(document.getElementById('rdPrincipal').value) || 0;
+    const years = Math.min(50, Math.max(1, parseInt(document.getElementById('rdYears').value) || 1));
+    const roi = parseFloat(document.getElementById('rdRoi').value) || 0;
+    const periodsPerYear = parseInt(document.getElementById('rdRecurrence').value) || 12;
+
+    const ratePerPeriod = (roi/100) / periodsPerYear;
+
+    let balance = 0;
+    let totalDeposited = 0;
+    let totalInterest = 0;
+
+    let rows = "";
+
+    for(let y=1; y<=years; y++){
+
+        let depositsThisYear = 0;
+        let interestThisYear = 0;
+
+        for(let p=0; p<periodsPerYear; p++){
+            balance += principal;
+            depositsThisYear += principal;
+
+            const interest = balance * ratePerPeriod;
+            balance += interest;
+            interestThisYear += interest;
+        }
+
+        totalDeposited += depositsThisYear;
+        totalInterest += interestThisYear;
+
+        rows += `<tr>
+            <td>${y}</td>
+            <td>${fmt(depositsThisYear)}</td>
+            <td>${fmt(interestThisYear)}</td>
+            <td>${fmt(balance)}</td>
+        </tr>`;
+    }
+
+    document.getElementById('rdTableBody').innerHTML = rows;
+
+    document.getElementById('rdSummary').innerHTML = `
+        <div class="summary-card">
+            <div class="label">Total principal deposited</div>
+            <div class="value">${fmt(totalDeposited)}</div>
+        </div>
+        <div class="summary-card good">
+            <div class="label">Total interest earned</div>
+            <div class="value">${fmt(totalInterest)}</div>
+        </div>
+        <div class="summary-card good">
+            <div class="label">Maturity amount</div>
+            <div class="value">${fmt(balance)}</div>
+        </div>
+    `;
+}
+
+function calcRetirement(){
+
+    const corpus = parseFloat(document.getElementById('retCorpus').value) || 0;
+    const currentAge = parseInt(document.getElementById('retCurrentAge').value) || 0;
+    const monthlyPension = parseFloat(document.getElementById('retPension').value) || 0;
+    const roi = parseFloat(document.getElementById('retRoi').value) || 0;
+    const startAge = parseInt(document.getElementById('retStartAge').value) || 0;
+    const years = Math.min(60, Math.max(1, parseInt(document.getElementById('retYears').value) || 1));
+
+    const ratePerMonth = (roi/100) / 12;
+
+    let balance = corpus;
+    let totalAccumInterest = 0;
+    let totalInterest = 0;
+    let totalPension = 0;
+    let depletedAtYear = null;
+
+    let rows = "";
+
+    const accumYears = Math.max(0, startAge - currentAge);
+
+    // ---- accumulation phase: current age -> pension start age, interest only, no withdrawal ----
+    for(let y=1; y<=accumYears; y++){
+
+        let interestThisYear = 0;
+
+        for(let m=0; m<12; m++){
+            const interest = balance * ratePerMonth;
+            balance += interest;
+            interestThisYear += interest;
+        }
+
+        totalAccumInterest += interestThisYear;
+
+        rows += `<tr>
+            <td>${y}</td>
+            <td>${currentAge + y - 1} → ${currentAge + y}</td>
+            <td>Accumulation</td>
+            <td>${fmt(interestThisYear)}</td>
+            <td>—</td>
+            <td>${fmt(balance)}</td>
+        </tr>`;
+    }
+
+    const corpusAtStart = balance;
+
+    // ---- withdrawal phase: pension start age onward ----
+    for(let y=1; y<=years; y++){
+
+        let interestThisYear = 0;
+        let pensionThisYear = 0;
+        let depletedThisYear = false;
+
+        for(let m=0; m<12; m++){
+
+            if(balance <= 0){
+                break;
+            }
+
+            const interest = balance * ratePerMonth;
+            balance += interest;
+            interestThisYear += interest;
+
+            balance -= monthlyPension;
+            pensionThisYear += monthlyPension;
+
+            if(balance <= 0 && depletedAtYear===null){
+                depletedAtYear = y;
+                depletedThisYear = true;
+            }
+        }
+
+        totalInterest += interestThisYear;
+        totalPension += pensionThisYear;
+
+        rows += `<tr class="${depletedThisYear ? 'depleted' : ''}">
+            <td>${accumYears + y}</td>
+            <td>${startAge + y - 1}</td>
+            <td>Withdrawal</td>
+            <td>${fmt(interestThisYear)}</td>
+            <td>${fmt(pensionThisYear)}</td>
+            <td>${fmt(Math.max(balance,0))}${depletedThisYear ? ' — corpus depleted' : ''}</td>
+        </tr>`;
+
+        if(balance <= 0){
+            break;
+        }
+    }
+
+    document.getElementById('retTableBody').innerHTML = rows;
+
+    document.getElementById('retSummary').innerHTML = `
+        <div class="summary-card good">
+            <div class="label">Corpus at pension start (age ${startAge})</div>
+            <div class="value">${fmt(corpusAtStart)}</div>
+        </div>
+        <div class="summary-card good">
+            <div class="label">Total interest earned (withdrawal phase)</div>
+            <div class="value">${fmt(totalInterest)}</div>
+        </div>
+        <div class="summary-card">
+            <div class="label">Total pension withdrawn</div>
+            <div class="value">${fmt(totalPension)}</div>
+        </div>
+        <div class="summary-card ${balance<=0 ? 'warn' : 'good'}">
+            <div class="label">${balance<=0 ? ('Corpus depleted in year ' + depletedAtYear + ' of withdrawal') : 'Remaining balance at end of tenure'}</div>
+            <div class="value">${fmt(Math.max(balance,0))}</div>
+        </div>
+    `;
+}
+
+let loanMonthlyData = [];
+let loanView = 'monthly';
+
+function calcLoan(){
+
+    const principal = parseFloat(document.getElementById('loanPrincipal').value) || 0;
+    const loanRoi = parseFloat(document.getElementById('loanRoi').value) || 0;
+    const investAmount = parseFloat(document.getElementById('loanInvestAmount').value) || 0;
+    const investRoi = parseFloat(document.getElementById('loanInvestRoi').value) || 0;
+    const years = Math.min(30, Math.max(1, parseInt(document.getElementById('loanTenure').value) || 1));
+
+    const months = years * 12;
+    const loanRatePerMonth = (loanRoi/100) / 12;
+    const investRatePerMonth = (investRoi/100) / 12;
+
+    // standard reducing-balance EMI
+    let emi;
+    if(loanRatePerMonth === 0){
+        emi = principal / months;
+    }else{
+        emi = principal * loanRatePerMonth * Math.pow(1+loanRatePerMonth, months) /
+              (Math.pow(1+loanRatePerMonth, months) - 1);
+    }
+
+    let loanBalance = principal;
+    let investValue = investAmount;
+
+    loanMonthlyData = [];
+
+    for(let m=1; m<=months; m++){
+
+        let interestPaid = 0;
+        let principalPaid = 0;
+        let emiThisMonth = 0;
+
+        if(loanBalance > 0){
+            interestPaid = loanBalance * loanRatePerMonth;
+            principalPaid = emi - interestPaid;
+            if(principalPaid > loanBalance) principalPaid = loanBalance;
+            emiThisMonth = interestPaid + principalPaid;
+
+            loanBalance -= principalPaid;
+        }
+
+        investValue += investValue * investRatePerMonth;
+
+        loanMonthlyData.push({
+            month: m,
+            year: Math.ceil(m/12),
+            emi: emiThisMonth,
+            interest: interestPaid,
+            principal: principalPaid,
+            loanBalance: Math.max(loanBalance,0),
+            investValue: investValue,
+            netPosition: investValue - Math.max(loanBalance,0)
+        });
+    }
+
+    renderLoanTable();
+
+    const totalLoanInterest = loanMonthlyData.reduce((s,r)=>s+r.interest,0);
+    const investGrowth = investValue - investAmount;
+    const netBenefit = investGrowth - totalLoanInterest;
+
+    document.getElementById('loanSummary').innerHTML = `
+        <div class="summary-card">
+            <div class="label">Monthly EMI</div>
+            <div class="value">${fmt(emi)}</div>
+        </div>
+        <div class="summary-card warn">
+            <div class="label">Total loan interest paid</div>
+            <div class="value">${fmt(totalLoanInterest)}</div>
+        </div>
+        <div class="summary-card good">
+            <div class="label">Total investment growth</div>
+            <div class="value">${fmt(investGrowth)}</div>
+        </div>
+        <div class="summary-card ${netBenefit >= 0 ? 'good' : 'warn'}">
+            <div class="label">${netBenefit >= 0 ? 'Better off taking the loan & investing by' : 'Better off paying upfront by'}</div>
+            <div class="value">${fmt(Math.abs(netBenefit))}</div>
+        </div>
+    `;
+}
+
+function setLoanView(view){
+
+    loanView = view;
+
+    document.getElementById('loanViewMonthly').classList.toggle('active', view==='monthly');
+    document.getElementById('loanViewYearly').classList.toggle('active', view==='yearly');
+
+    renderLoanTable();
+}
+
+function renderLoanTable(){
+
+    const head = document.getElementById('loanTableHead');
+
+    if(loanView === 'monthly'){
+
+        head.innerHTML = `<tr>
+            <th>Month</th>
+            <th>EMI (₹)</th>
+            <th>Interest paid (₹)</th>
+            <th>Principal repaid (₹)</th>
+            <th>Loan balance (₹)</th>
+            <th>Investment value (₹)</th>
+            <th>Net position (₹)</th>
+        </tr>`;
+
+        document.getElementById('loanTableBody').innerHTML = loanMonthlyData.map(r => `
+            <tr>
+                <td>Y${r.year} · M${((r.month-1)%12)+1} (#${r.month})</td>
+                <td>${fmt(r.emi)}</td>
+                <td>${fmt(r.interest)}</td>
+                <td>${fmt(r.principal)}</td>
+                <td>${fmt(r.loanBalance)}</td>
+                <td>${fmt(r.investValue)}</td>
+                <td>${fmt(r.netPosition)}</td>
+            </tr>
+        `).join("");
+
+    }else{
+
+        head.innerHTML = `<tr>
+            <th>Year</th>
+            <th>EMI (monthly, ₹)</th>
+            <th>Interest paid (₹)</th>
+            <th>Principal repaid (₹)</th>
+            <th>Loan balance (₹)</th>
+            <th>Investment value (₹)</th>
+            <th>Net position (₹)</th>
+        </tr>`;
+
+        const years = Math.max(...loanMonthlyData.map(r=>r.year));
+        let rows = "";
+
+        for(let y=1; y<=years; y++){
+
+            const yearRows = loanMonthlyData.filter(r=>r.year===y);
+            const interest = yearRows.reduce((s,r)=>s+r.interest,0);
+            const principalPaid = yearRows.reduce((s,r)=>s+r.principal,0);
+            const last = yearRows[yearRows.length-1];
+
+            rows += `<tr>
+                <td>${y}</td>
+                <td>${fmt(last.emi)}</td>
+                <td>${fmt(interest)}</td>
+                <td>${fmt(principalPaid)}</td>
+                <td>${fmt(last.loanBalance)}</td>
+                <td>${fmt(last.investValue)}</td>
+                <td>${fmt(last.netPosition)}</td>
+            </tr>`;
+        }
+
+        document.getElementById('loanTableBody').innerHTML = rows;
+    }
+}
+
+// init
+const initHash = location.hash.replace('#','');
+const startTab = (initHash === 'retirement' || initHash === 'loan') ? initHash : 'rd';
+showTab(startTab);
+
+</script>
+
+</body>
+</html>
