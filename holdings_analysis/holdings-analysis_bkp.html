@@ -48,7 +48,7 @@ h2{ margin:0 0 14px; font-size:15px; }
     align-items:center;
 }
 
-button, select{
+button, .file-label, select{
     cursor:pointer;
     border:1px solid #d7dbe2;
     background:#ffffff;
@@ -58,13 +58,26 @@ button, select{
     font:inherit;
     font-size:12.5px;
 }
-button:hover{ background:#f1f3f6; }
+button:hover, .file-label:hover{ background:#f1f3f6; }
+input[type=file]{ display:none; }
+
+.note{
+    margin:0 0 18px;
+    padding:12px 16px;
+    border-left:3px solid #b3781f;
+    border-radius:6px;
+    background:#faf1e0;
+    color:#5c4a1f;
+    font-size:12.5px;
+    line-height:1.5;
+}
+.note strong{ color:#3d3115; }
 
 .cards{
     display:grid;
-    grid-template-columns:repeat(2,1fr);
+    grid-template-columns:repeat(4,1fr);
     gap:12px;
-    margin-bottom:16px;
+    margin-bottom:20px;
 }
 
 .card{
@@ -101,15 +114,12 @@ button:hover{ background:#f1f3f6; }
     overflow:auto;
 }
 
-.dashboard-top{
+.charts-grid{
     display:grid;
-    grid-template-columns:1.6fr 1fr;
+    grid-template-columns:1fr 1fr;
     gap:16px;
-    margin-bottom:0;
-    align-items:start;
+    margin-bottom:18px;
 }
-.sidebar .panel{ margin-bottom:0; }
-.sidebar{ display:flex; flex-direction:column; gap:16px; }
 
 table{ width:100%; border-collapse:collapse; white-space:nowrap; }
 th, td{ text-align:right; padding:8px 10px; border-bottom:1px solid #e9ebf0; font-size:12.5px; }
@@ -154,7 +164,8 @@ tr:hover td{ background:#f8f9fb; }
 .muted{ color:#8b93a1; }
 
 @media(max-width:900px){
-    .dashboard-top{ grid-template-columns:1fr; }
+    .cards{ grid-template-columns:repeat(2,1fr); }
+    .charts-grid{ grid-template-columns:1fr; }
     .top{ flex-direction:column; }
 }
 @media(max-width:480px){
@@ -179,24 +190,16 @@ tr:hover td{ background:#f8f9fb; }
 <div class="top">
   <div>
     <h1>📊 Holdings Analysis</h1>
-    <p id="subtitle">Enter password to load your holdings.</p>
+    <p id="subtitle">Loading statement history…</p>
   </div>
-  <div class="actions" id="actionsBar" style="display:none;">
-    <button id="reloadBtn">↻ Reload SOH.txt</button>
+  <div class="actions">
+    <label class="file-label">Choose SOH.txt <input id="fileInput" type="file" accept=".txt,.tsv,text/plain"></label>
   </div>
 </div>
 
-<div id="lockScreen" class="panel" style="max-width:360px;margin:40px auto;text-align:center;">
-  <div style="font-size:32px;">🔒</div>
-  <h2 style="margin:10px 0 4px;">Private portfolio</h2>
-  <p class="muted" style="margin:0 0 16px;font-size:12.5px;">Enter your password to load holdings from SOH.txt.</p>
-  <input id="pwInput" type="password" placeholder="Password" autocomplete="current-password"
-         style="width:100%;padding:9px 10px;border:1px solid #d7dbe2;border-radius:8px;margin-bottom:10px;box-sizing:border-box;font:inherit;">
-  <button id="unlockBtn" style="width:100%;background:#1f6f54;color:#fff;border-color:#1f6f54;padding:9px;">Load Holdings</button>
-  <p id="pwError" class="negative" style="font-size:12px;margin-top:10px;display:none;">Incorrect password.</p>
+<div class="note">
+  <strong>How to read this:</strong> everything here — value trends, quantity trends, and each holding's XIRR — is computed only from your statement snapshots (<code>SOH.txt</code>), never from a live market feed. A quantity increase is treated as a purchase at that statement's price, a decrease as a sale, and clean multiples (2×–10×) paired with an inverse price move are treated as a split/bonus rather than a purchase. Holdings with only one or two recent snapshots can show extreme-looking XIRR — a small price move over a short holding period gets annualized into a very large percentage, so treat those numbers as noisy until more history accumulates. "Hold / Review / Watch" labels are rule-based prompts to help you decide what to look into — not investment advice, and not a substitute for a licensed advisor.
 </div>
-
-<div id="dashboardContent" style="display:none;">
 
 <div class="filter-row">
   <label for="typeFilter">Filter by type:</label>
@@ -208,18 +211,17 @@ tr:hover td{ background:#f8f9fb; }
   </select>
 </div>
 
-<div class="dashboard-top">
+<div class="cards" id="cards"></div>
+
+<div class="charts-grid">
   <div class="panel">
-    <h2>Portfolio trend — value &amp; quantity, month over month</h2>
-    <canvas id="trendChart" height="230"></canvas>
-    <p class="muted" id="qtyNote" style="font-size:11px;margin:8px 0 0;"></p>
+    <h2>Portfolio value — month over month</h2>
+    <canvas id="valueChart" height="200"></canvas>
   </div>
-  <div class="sidebar">
-    <div class="cards" id="cards"></div>
-    <div class="panel">
-      <h2>🤖 Portfolio insights</h2>
-      <ul class="insights-list" id="insights"></ul>
-    </div>
+  <div class="panel">
+    <h2>Total quantity/units held — month over month</h2>
+    <canvas id="qtyChart" height="200"></canvas>
+    <p class="muted" id="qtyNote" style="font-size:11px;margin:8px 0 0;"></p>
   </div>
 </div>
 
@@ -229,6 +231,11 @@ tr:hover td{ background:#f8f9fb; }
     <thead><tr><th>Statement date</th><th>Value</th><th>Δ Value</th><th>Total qty/units</th><th>Δ Qty</th><th># Holdings</th></tr></thead>
     <tbody id="momTable"></tbody>
   </table>
+</div>
+
+<div class="panel">
+  <h2>🤖 Portfolio insights</h2>
+  <ul class="insights-list" id="insights"></ul>
 </div>
 
 <div class="panel">
@@ -254,12 +261,10 @@ tr:hover td{ background:#f8f9fb; }
 
 <p id="status"></p>
 
-</div>
-
 <script>
 
 let model, typeFilter = 'ALL';
-let trendChart;
+let valueChart, qtyChart;
 
 const nf = new Intl.NumberFormat('en-IN', { style:'currency', currency:'INR', maximumFractionDigits:0 });
 const pf = new Intl.NumberFormat('en-IN', { maximumFractionDigits:1 });
@@ -455,42 +460,22 @@ function renderCharts(mom){
 
     const labels = mom.map(m=>m.date);
 
-    if(trendChart) trendChart.destroy();
-    trendChart = new Chart(document.getElementById('trendChart'), {
+    if(valueChart) valueChart.destroy();
+    valueChart = new Chart(document.getElementById('valueChart'), {
         type:'line',
-        data:{
-            labels,
-            datasets:[
-                {
-                    label:'Value (₹)',
-                    data:mom.map(m=>m.value),
-                    borderColor:'#1f6f54',
-                    backgroundColor:'rgba(31,111,84,0.08)',
-                    fill:true, tension:.15, pointRadius:3,
-                    yAxisID:'yValue'
-                },
-                {
-                    label:'Quantity / units',
-                    data:mom.map(m=>m.qty),
-                    borderColor:'#2a5d9f',
-                    backgroundColor:'rgba(42,93,159,0.08)',
-                    fill:false, tension:.15, pointRadius:3,
-                    yAxisID:'yQty'
-                }
-            ]
-        },
-        options:{
-            interaction:{ mode:'index', intersect:false },
-            plugins:{ legend:{ display:true, position:'top', labels:{ boxWidth:12, font:{size:11} } } },
-            scales:{
-                yValue:{ position:'left', ticks:{ callback:v=>'₹'+(v/100000).toFixed(1)+'L' } },
-                yQty:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>pf.format(v) } }
-            }
-        }
+        data:{ labels, datasets:[{ data:mom.map(m=>m.value), borderColor:'#1f6f54', backgroundColor:'rgba(31,111,84,0.08)', fill:true, tension:.15, pointRadius:3 }] },
+        options:{ plugins:{ legend:{display:false} }, scales:{ y:{ ticks:{ callback:v=>'₹'+(v/100000).toFixed(1)+'L' } } } }
+    });
+
+    if(qtyChart) qtyChart.destroy();
+    qtyChart = new Chart(document.getElementById('qtyChart'), {
+        type:'line',
+        data:{ labels, datasets:[{ data:mom.map(m=>m.qty), borderColor:'#2a5d9f', backgroundColor:'rgba(42,93,159,0.08)', fill:true, tension:.15, pointRadius:3 }] },
+        options:{ plugins:{ legend:{display:false} } }
     });
 
     document.getElementById('qtyNote').textContent = typeFilter==='ALL'
-        ? 'Note: with "All" selected, the quantity line sums shares and fund/ETF units together — treat it as a rough activity trend, not a literal unit count.'
+        ? 'Note: with "All" selected, this sums shares and fund/ETF units together — treat it as a rough activity trend, not a literal unit count.'
         : '';
 }
 
@@ -583,13 +568,12 @@ function render(){
 }
 
 function loadDefault(){
-    document.getElementById('subtitle').textContent = 'Loading statement history…';
     fetch('SOH.txt')
         .then(function(r){ if(!r.ok) throw new Error(); return r.text(); })
         .then(function(text){ setData(text); })
         .catch(function(){
-            document.getElementById('subtitle').textContent = 'Could not load SOH.txt.';
-            document.getElementById('status').textContent = 'Make sure this page is served over http(s) (e.g. GitHub Pages) and SOH.txt sits in the same folder.';
+            document.getElementById('subtitle').textContent = 'Choose SOH.txt to load your statement history.';
+            document.getElementById('status').textContent = 'Tip: open this through GitHub Pages or a local web server for automatic loading.';
         });
 }
 
@@ -599,50 +583,16 @@ function setData(text){
     document.getElementById('status').textContent = `Loaded ${model.list.length} ISINs from ${model.dates.length} statement dates.`;
 }
 
+document.getElementById('fileInput').addEventListener('change', function(e){
+    if(e.target.files[0]) e.target.files[0].text().then(setData);
+});
+
 document.getElementById('typeFilter').addEventListener('change', e=>{
     typeFilter = e.target.value;
     render();
 });
 
-document.getElementById('reloadBtn').addEventListener('click', loadDefault);
-
-// --- simple password gate ---
-// Not real security (anyone with the file can read the hash below) — just keeps a
-// public GitHub Pages URL from showing your portfolio to casual visitors.
-const PASSWORD_HASH = '29c009a4492631bd4f0876b2056cb278060bc850e5aa03ffdfa106077a522196';
-
-function sha256Hex(str){
-    const enc = new TextEncoder().encode(str);
-    return crypto.subtle.digest('SHA-256', enc).then(function(buf){
-        return Array.prototype.map.call(new Uint8Array(buf), function(b){ return b.toString(16).padStart(2,'0'); }).join('');
-    });
-}
-
-function tryUnlock(){
-    const pw = document.getElementById('pwInput').value;
-    if(!window.crypto || !window.crypto.subtle){
-        document.getElementById('pwError').textContent = 'This browser can\'t verify the password securely (requires https). Try a different browser or GitHub Pages.';
-        document.getElementById('pwError').style.display = 'block';
-        return;
-    }
-    sha256Hex(pw).then(function(hash){
-        if(hash === PASSWORD_HASH){
-            document.getElementById('lockScreen').style.display = 'none';
-            document.getElementById('actionsBar').style.display = '';
-            document.getElementById('dashboardContent').style.display = '';
-            loadDefault();
-        }else{
-            document.getElementById('pwError').textContent = 'Incorrect password.';
-            document.getElementById('pwError').style.display = 'block';
-            document.getElementById('pwInput').value = '';
-        }
-    });
-}
-
-document.getElementById('unlockBtn').addEventListener('click', tryUnlock);
-document.getElementById('pwInput').addEventListener('keydown', function(e){
-    if(e.key === 'Enter') tryUnlock();
-});
+loadDefault();
 
 </script>
 </body>
