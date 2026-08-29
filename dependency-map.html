@@ -101,6 +101,7 @@
   .lane.funds .lane-title i{background:var(--green);}
   .lane.news .lane-title i{background:var(--amber);}
   .lane.unused .lane-title i{background:var(--gray);}
+  .lane.holdings .lane-title i{background:#7c5cbf;}
   .lane-desc{font-size:11.5px;color:var(--text-faint);margin-bottom:18px;line-height:1.5;}
 
   .chain{display:flex;flex-direction:column;align-items:stretch;}
@@ -171,6 +172,7 @@
   <a href="news.html">News radar</a>
   <a href="dependency-map.html" class="active">Dependency map</a>
 <a href="calculators.html">Calculators</a>
+  <a href="holdings_analysis/holdings-analysis.html">Holdings analysis</a>
 </nav>
 <div class="wrap">
 
@@ -354,9 +356,28 @@
       </div>
     </div>
 
+    <!-- HOLDINGS ANALYSIS LANE -->
+    <div class="lane holdings">
+      <div class="lane-title"><i></i>holdings analysis</div>
+      <div class="lane-desc">Standalone portfolio dashboard — no workflow, no live API. Everything is computed in-browser from a manually-updated statement file.</div>
+      <div class="chain">
+        <div class="node data" data-id="SOH.txt" data-group="g6">
+          <div class="kind"><span class="dot data"></span>input, manual</div>
+          <div class="name">holdings_analysis/SOH.txt</div>
+          <div class="desc">NSDL + CDSL statement history, appended by hand each time you get a new statement</div>
+        </div>
+        <div class="connector"></div>
+        <div class="node page" data-id="holdings-analysis.html" data-group="g6">
+          <div class="kind"><span class="dot page"></span>page</div>
+          <div class="name">holdings_analysis/holdings-analysis.html</div>
+          <div class="desc">MoM value/quantity trends, per-holding XIRR, rule-based suggestions — all computed client-side from SOH.txt</div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <footer>trading-dashboard — 24 files across 4 pipelines · generated from repo contents</footer>
+  <footer>trading-dashboard — 26 files across 5 pipelines · generated from repo contents</footer>
 </div>
 
 <script>
@@ -389,7 +410,10 @@
 
     "stocks.csv": ["fetch_data.py","app.py"],
     "app.py": ["fetch_data.py","stocks.csv","requirements.txt"],
-    "requirements.txt": ["app.py"]
+    "requirements.txt": ["app.py"],
+
+    "SOH.txt": ["holdings-analysis.html"],
+    "holdings-analysis.html": ["SOH.txt"]
   };
 
   let active = null;
