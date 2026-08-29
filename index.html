@@ -67,6 +67,18 @@
   <a href="holdings_analysis/holdings-analysis.html">Holdings analysis</a>
 </nav>
 
+<div id="lockScreen" class="card" style="max-width:360px;margin:60px auto;text-align:center;">
+  <div style="font-size:32px;">🔒</div>
+  <h2 style="margin:10px 0 4px;">Private dashboard</h2>
+  <p style="margin:0 0 16px;font-size:12.5px;color:#6b7280;">Enter your password to load holdings.</p>
+  <input id="pwInput" type="password" placeholder="Password" autocomplete="current-password"
+         style="width:100%;padding:9px 10px;border:1px solid #d7dbe2;border-radius:8px;margin-bottom:10px;box-sizing:border-box;font:inherit;">
+  <button id="unlockBtn" style="width:100%;background:#1f6f54;color:#fff;border:1px solid #1f6f54;padding:9px;border-radius:8px;cursor:pointer;">Unlock</button>
+  <p id="pwError" style="font-size:12px;margin-top:10px;display:none;color:#c2453f;">Incorrect password.</p>
+</div>
+
+<div id="dashboardContent" style="display:none;">
+
 <h2>📊 Smart Trading Dashboard</h2>
 
 <div class="controls">
@@ -107,6 +119,8 @@
 <div class="portfolio-box">
 <h3>💼 Portfolio Summary</h3>
 <div id="summary"></div>
+</div>
+
 </div>
 
 <script>
@@ -245,8 +259,43 @@ document.getElementById("search").oninput = render
 document.getElementById("marketFilter").onchange = render
 document.getElementById("sortBy").onchange = render
 
-load()
-setInterval(load,300000)
+// --- simple password gate ---
+// Not real security (anyone with the file can read the hash below) — just keeps a
+// public GitHub Pages URL from showing your portfolio to casual visitors.
+const PASSWORD_HASH = '29c009a4492631bd4f0876b2056cb278060bc850e5aa03ffdfa106077a522196';
+
+function sha256Hex(str){
+    const enc = new TextEncoder().encode(str);
+    return crypto.subtle.digest('SHA-256', enc).then(function(buf){
+        return Array.prototype.map.call(new Uint8Array(buf), function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+    });
+}
+
+function tryUnlock(){
+    const pw = document.getElementById('pwInput').value;
+    if(!window.crypto || !window.crypto.subtle){
+        document.getElementById('pwError').textContent = 'This browser can\'t verify the password securely (requires https). Try a different browser or GitHub Pages.';
+        document.getElementById('pwError').style.display = 'block';
+        return;
+    }
+    sha256Hex(pw).then(function(hash){
+        if(hash === PASSWORD_HASH){
+            document.getElementById('lockScreen').style.display = 'none';
+            document.getElementById('dashboardContent').style.display = '';
+            load();
+            setInterval(load, 300000);
+        }else{
+            document.getElementById('pwError').textContent = 'Incorrect password.';
+            document.getElementById('pwError').style.display = 'block';
+            document.getElementById('pwInput').value = '';
+        }
+    });
+}
+
+document.getElementById('unlockBtn').addEventListener('click', tryUnlock);
+document.getElementById('pwInput').addEventListener('keydown', function(e){
+    if(e.key === 'Enter') tryUnlock();
+});
 
 </script>
 
