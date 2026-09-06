@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI/ML Learning Path — Short & Practical</title>
+<style>
+  :root {
+    --navy: #1b1f4b;
+    --orange: #e8590c;
+    --bg: #f5f6fa;
+    --card: #ffffff;
+    --text: #2b2d3e;
+    --muted: #6b7080;
+    --border: #e3e5ee;
+    --yt: #d92b2b;
+    --gh: #24292e;
+    --li: #0a66c2;
+    --web: #0f766e;
+    --blog: #7c3aed;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  header {
+    background: linear-gradient(135deg, var(--navy), #2d3277);
+    color: #fff;
+    padding: 40px 24px 32px;
+  }
+  header .wrap { max-width: 920px; margin: 0 auto; }
+  header h1 { margin: 0 0 8px; font-size: 28px; }
+  header p.sub { margin: 0; color: #cdd0ee; font-size: 15px; }
+  header .stats {
+    display: flex; gap: 24px; margin-top: 20px; flex-wrap: wrap;
+  }
+  header .stat {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+  header .stat b { display: block; font-size: 18px; color: #ffd7a8; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 28px 24px 60px; }
+  .progress-bar-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .progress-bar { flex: 1; height: 10px; background: #eceefb; border-radius: 6px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--orange), #ff8a3d); transition: width .3s ease; }
+  #progress-label { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .phase {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 2px rgba(20,20,50,0.04);
+  }
+  .phase-head {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 4px;
+  }
+  .phase-num {
+    background: var(--navy); color: #fff; font-weight: 700; font-size: 14px;
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .phase.mcp .phase-num { background: var(--orange); }
+  .phase-title { font-size: 17px; font-weight: 700; margin: 0; }
+  .phase-time {
+    margin-left: auto; font-size: 12px; color: var(--muted);
+    background: #f0f1f8; padding: 4px 10px; border-radius: 20px; white-space: nowrap;
+  }
+  .phase-desc { color: var(--muted); font-size: 13.5px; margin: 6px 0 14px 44px; }
+  .resource-list { list-style: none; margin: 0 0 0 44px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .resource {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border: 1px solid var(--border); border-radius: 9px;
+    background: #fbfbfe;
+  }
+  .resource label { display: flex; align-items: center; gap: 10px; width: 100%; cursor: pointer; }
+  .resource input[type=checkbox] { width: 16px; height: 16px; flex-shrink: 0; accent-color: var(--orange); }
+  .tag {
+    font-size: 10.5px; font-weight: 700; letter-spacing: .3px;
+    padding: 3px 8px; border-radius: 5px; color: #fff; flex-shrink: 0; text-transform: uppercase;
+  }
+  .tag.youtube { background: var(--yt); }
+  .tag.github { background: var(--gh); }
+  .tag.linkedin { background: var(--li); }
+  .tag.website { background: var(--web); }
+  .tag.blog { background: var(--blog); }
+  .resource a { color: var(--text); text-decoration: none; font-size: 14px; font-weight: 500; }
+  .resource a:hover { text-decoration: underline; color: var(--orange); }
+  .resource .meta { color: var(--muted); font-size: 12.5px; margin-left: auto; padding-left: 8px; white-space: nowrap; }
+  .checked label { opacity: 0.55; }
+  .checked a { text-decoration: line-through; }
+  .capstone {
+    background: linear-gradient(135deg, #fff4ea, #fff);
+    border: 1px solid #ffd9b3;
+  }
+  .capstone .phase-num { background: var(--orange); }
+  footer { text-align: center; color: var(--muted); font-size: 12.5px; padding: 20px 24px 40px; }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>AI/ML Learning Path</h1>
+    <p class="sub">Short, practical track — skips classical ML depth, weighted toward GenAI / RAG / Agents / MCP, the areas most relevant to current GBT AI work.</p>
+    <div class="stats">
+      <div class="stat"><b>~12–14 hrs</b>instruction time</div>
+      <div class="stat"><b>2–3 weeks</b>part-time pace</div>
+      <div class="stat"><b>8 topics</b>+ 1 capstone</div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="progress-bar-wrap">
+    <div class="progress-bar"><div class="progress-bar-fill" id="progress-fill"></div></div>
+    <span id="progress-label">0 / 0 done</span>
+  </div>
+
+  <!-- Phase 1 -->
+  <div class="phase" data-phase="1">
+    <div class="phase-head">
+      <div class="phase-num">1</div>
+      <h2 class="phase-title">ML & Neural Network Vocabulary</h2>
+      <span class="phase-time">~1 hr</span>
+    </div>
+    <p class="phase-desc">Just enough intuition to follow everything downstream — what a neural net is, gradient descent, backprop.</p>
+    <ul class="resource-list">
+      <li class="resource"><label><input type="checkbox"><span class="tag youtube">YouTube</span><a href="https://www.youtube.com/playlist?list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi" target="_blank">3Blue1Brown — Neural Networks (4-part series)</a><span class="meta">~40 min</span></label></li>
+      <li class="resource"><label><input type="checkbox"><span class="tag linkedin">LinkedIn Learning</span><a href="https://www.linkedin.com/learning/artificial-intelligence-foundations-machine-learning-22345868" target="_blank">Artificial Intelligence Foundations: Machine Learning</a><span class="meta">Kesha Williams</span></label></li>
+      <li class="resource"><label><input type="checkbox"><span class="tag linkedin">LinkedIn Learning</span><a href="https://www.linkedin.com/learning/paths/getting-started-with-ai-and-machine-learning" target="_blank">Learning Path: Getting Started with AI and Machine Learning</a><span class="meta">optional, deeper</span></label></li>
+    </ul>
+  </div>
+
+  <!-- Phase 2 -->
+  <div class="phase" data-phase="2">
+    <div class="phase-head">
+      <div class="phase-num">2</div>
+      <h2 class="phase-title">Transformers & Attention</h2>
+      <span class="phase-time">~1 hr</span>
+    </div>
+    <p class="phase-desc">The architecture behind every LLM you'll use. Understand this and GPT/Claude/Gemini all make sense.</p>
+    <ul class="resource-list">
+      <li class="resource"><label><input type="checkbox"><span class="tag youtube">YouTube</span><a href="https://www.youtube.com/watch?v=wjZofJX0v4M" target="_blank">3Blue1Brown — "But what is a GPT?"</a><span class="meta">~27 min</span></label></li>
+      <li class="resource"><label><input type="checkbox"><span class="tag youtube">YouTube</span><a href="https://www.youtube.com/watch?v=eMlx5fFNoYc" target="_blank">3Blue1Brown — "Attention in transformers, visually explained"</a><span class="meta">~26 min</span></label></li>
+      <li class="resource"><label><input type="checkbox"><span class="tag blog">Blog</span><a href="https://jalammar.github.io/illustrated-transformer/" target="_blank">Jay Alammar — "The Illustrated Transformer"</a><span class="meta">reference</span></label></li>
+    </ul>
+  </div>
+
+  <!-- Phase 3 -->
+  <div class="phase" data-phase="3">
+    <div class="phase-head">
+      <div class="phase-num">3</div>
+      <h2 class="phase-title">Hands-On With Real Models</h2>
+      <span class="phase-time">~2 hrs</span>
+    </div>
+    <p class="phase-desc">Just chapters 1–2 — how pipelines work and how a Transformer model actually runs. Skip the rest of the course.</p>
+    <ul class="resource-list">
+      <li class="resource"><label><input type="checkbox"><span class="tag website">Website</span><a href="https://huggingface.co/learn/llm-course/en/chapter1/1" target="_blank">Hugging Face LLM Course — Ch. 1–2</a><span class="meta">official</span></label></li>
+      <li class="resource"><label><input type="checkbox"><span class="tag youtube">YouTube</span><a href="https://www.youtube.com/playlist?list=PLY7sQ59Bufnulb_CyOVPw8r7lY-3VyBN9" target="_blank">Same course as a video playlist</a><span class="meta">alt. format</span></label></li>
+      <li class="resource"><label><input type="checkbox"><span class="tag github">GitHub</span><a href="https://github.com/ANYANTUDRE/NLP-Course-Hugging-Face" target="_blank">ANYANTUDRE/NLP-Course-Hugging-Face</a><span class="meta">notes + code</span></label></li>
+    </ul>
+  </div>
+
+  <!-- Phase 4 -->
+  <div class="phase" data-phase="4">
+    <div class="phase-head">
+      <div class="phase-num">4</div>
+      <h2 class="phase-title">Prompt Engineering</h2>
+      <span class="phase-time">~1.5 hrs</span>
+    </div>
+    <p class="phase-desc">The highest-leverage, lowest-effort skill — pick one, don't do all three.</p>
+    <ul class="resource-list">
+      <li class="resource"><label><input type="checkbox"><span class="tag website">Website</span><a href="https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/" target="_blank">DeepLearning.AI — ChatGPT Prompt Engineering for Developers</a><span class="meta">Andrew Ng + OpenAI</span></label></li>
+      <li class="resource"><label><input type="checkbox"><span class="tag linkedin">LinkedIn Learning</span><a href="https://www.linkedin.com/learning/introduction-to-prompt-engineering-for-generative-ai-24636124" target="_blank">Introduction to Prompt Engineering for Generative AI</a><span class="meta">beginner friendly</span></label></li>
+      <li class="resource"><label><input type="checkbox"><span class="tag linkedin">LinkedIn Learning</span><a href="https://www.linkedin.com/learning/prompt-engineering-how-to-talk-to-the-ais" target="_blank">Prompt Engineering: How to Talk to the AIs</a><span class="meta">Xavier Amatriain (LinkedIn VP Eng/AI)</span></label></li>
+    </ul>
+  </div>
+
+  <!-- Phase 5 -->
+  <div class="phase" data-phase="5">
+    <div class="phase-head">
+      <div class="phase-num">5</div>
+      <h2 class="phase-title">RAG (Retrieval-Augmented Generation)</h2>
+      <span class="phase-time">~1.5 hrs</span>
+    </div>
+    <p class="phase-desc">Directly relevant to what GBT's AI Community of Practice has been building. Pick one course.</p>
+    <ul class="resource-list">
+      <li class="resource"><label><input type="checkbox"><span class="tag website">Website</span><a href="https://www.deeplearning.ai/short-courses/langchain-chat-with-your-data/" target="_blank">DeepLearning.AI — LangChain: Chat with Your Data</a><span class="meta">free short course</span></label></li>
+      <li class="resource"><label><input type="checkbox"><span class="tag linkedin">LinkedIn Learning</span><a href="https://www.classcentral.com/course/linkedin-learning-master-retrieval-augmented-generation-rag-472491" target="_blank">Master Retrieval-Augmented Generation (RAG)</a><span class="meta">chunking, embeddings, vector DBs</span></label></li>
+      <li class="resource"><label><input type="checkbox"><span class="tag website">Website</span><a href="https://learn.activeloop.ai/courses/rag" target="_blank">Activeloop — RAG with LlamaIndex & LangChain</a><span class="meta">free, hands-on</span></label></li>
+    </ul>
+  </div>
+
+  <!-- Phase 6 -->
+  <div class="phase" data-phase="6">
+    <div class="phase-head">
+      <div class="phase-num">6</div>
+      <h2 class="phase-title">Agentic AI</h2>
+      <span class="phase-time">~2 hrs</span>
+    </div>
+    <p class="phase-desc">How to go from a single LLM call to a system that plans, calls tools, and loops.</p>
+    <ul class="resource-list">
+      <li class="resource"><label><input type="checkbox"><span class="tag website">Website</span><a href="https://www.deeplearning.ai/courses/ai-agents-in-langgraph" target="_blank">DeepLearning.AI — AI Agents in LangGraph</a><span class="meta">LangChain + Tavily founders</span></label></li>
+      <li class="resource"><label><input type="checkbox"><span class="tag github">GitHub</span><a href="https://github.com/langchain-ai/langgraph" target="_blank">langchain-ai/langgraph</a><span class="meta">source + examples</span></label></li>
+    </ul>
+  </div>
+
+  <!-- Phase 6.5 MCP -->
+  <div class="phase mcp" data-phase="6.5">
+    <div class="phase-head">
+      <div class="phase-num">6.5</div>
+      <h2 class="phase-title">MCP — Model Context Protocol</h2>
+      <span class="phase-time">~2–3 hrs</span>
+    </div>
+    <p class="phase-desc">How agents (like this one) actually connect to tools and data sources — and how to build your own server.</p>
+    <ul class="resource-list">
+      <li class="resource"><label><input type="checkbox"><span class="tag website">Website</span><a href="https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro" target="_blank">modelcontextprotocol.io — "What is MCP?"</a><span class="meta">concept, ~15 min</span></label></li>
+      <li class="resource"><label><input type="checkbox"><span class="tag youtube">YouTube</span><a href="https://www.youtube.com/watch?v=cGuyrANVi4A" target="_blank">"How Model Context Protocol (MCP) actually works"</a><span class="meta">~15 min</span></label></li>
+      <li class="resource"><label><input type="checkbox"><span class="tag youtube">YouTube</span><a href="https://www.youtube.com/watch?v=9ILgj4v992Q" target="_blank">"MCP Explained: Bridging the Gap between AI Agents and Tools"</a><span class="meta">overview</span></label></li>
+      <li class="resource"><label><input type="checkbox"><span class="tag website">Website</span><a href="https://modelcontextprotocol.io/docs/2026-07-28/develop/build-server" target="_blank">Official tutorial — Build an MCP Server</a><span class="meta">hands-on, Python/TS</span></label></li>
+      <li class="resource"><label><input type="checkbox"><span class="tag github">GitHub</span><a href="https://github.com/microsoft/mcp-for-beginners" target="_blank">microsoft/mcp-for-beginners</a><span class="meta">full curriculum, multi-language</span></label></li>
+      <li class="resource"><label><input type="checkbox"><span class="tag github">GitHub</span><a href="https://github.com/modelcontextprotocol/servers" target="_blank">modelcontextprotocol/servers</a><span class="meta">reference implementations</span></label></li>
+    </ul>
+  </div>
+
+  <!-- Capstone -->
+  <div class="phase capstone" data-phase="7">
+    <div class="phase-head">
+      <div class="phase-num">7</div>
+      <h2 class="phase-title">Capstone — Build Something Real</h2>
+      <span class="phase-time">1 weekend</span>
+    </div>
+    <p class="phase-desc">Pick one and ship it — this is worth more than any course above.</p>
+    <ul class="resource-list">
+      <li class="resource"><label><input type="checkbox"><span>A small RAG bot over your own docs (LangChain + any LLM API)</span></label></li>
+      <li class="resource"><label><input type="checkbox"><span>A custom MCP server (e.g. a <code>run_query</code> tool over a Snowflake table) + an agent that uses it</span></label></li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>
+  Progress is saved locally in this browser only (localStorage) — nothing is sent anywhere.
+</footer>
+
+<script>
+  const checkboxes = document.querySelectorAll('.resource input[type=checkbox]');
+  const STORAGE_KEY = 'ai-ml-learning-path-progress';
+
+  function ids() {
+    return Array.from(checkboxes).map((cb, i) => {
+      const li = cb.closest('.resource');
+      const link = li.querySelector('a');
+      return link ? link.href : 'item-' + i;
+    });
+  }
+
+  function load() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+    catch (e) { return {}; }
+  }
+
+  function save(state) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  function updateProgress() {
+    const total = checkboxes.length;
+    const done = Array.from(checkboxes).filter(cb => cb.checked).length;
+    document.getElementById('progress-fill').style.width = (total ? (done / total * 100) : 0) + '%';
+    document.getElementById('progress-label').textContent = done + ' / ' + total + ' done';
+  }
+
+  const keyList = ids();
+  const state = load();
+
+  checkboxes.forEach((cb, i) => {
+    const key = keyList[i];
+    if (state[key]) {
+      cb.checked = true;
+      cb.closest('.resource').classList.add('checked');
+    }
+    cb.addEventListener('change', () => {
+      state[key] = cb.checked;
+      save(state);
+      cb.closest('.resource').classList.toggle('checked', cb.checked);
+      updateProgress();
+    });
+  });
+
+  updateProgress();
+</script>
+
+</body>
+</html>
