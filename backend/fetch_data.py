@@ -124,6 +124,7 @@ def analyze_stock(ticker, buy_price):
     # =========================
     return {
         "ticker": ticker,
+        "price_date": close.index[-1].date().isoformat(),
         "buy_price": buy_price,
         "current": safe(current),
         "avg7": safe(avg7),

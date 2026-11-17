@@ -1,166 +1,122 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>AI Trading Insights</title>
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Portfolio Research | Trading Dashboard</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
   <style>
-    body {
-      font-family: Arial;
-      background: #f7f8fa;
-      color: #2b2f38;
-      padding: 20px;
+    :root { color-scheme: light; --ink:#162a2a; --muted:#4f6462; --line:#dae3dd; --paper:#f4f6f2; --green:#116344; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font:15px/1.5 "DM Sans", sans-serif; }
+    .site-nav { display:flex; flex-wrap:wrap; gap:4px 16px; justify-content:center; background:white; border-bottom:1px solid var(--line); padding:10px 16px; }
+    .site-nav a { color:var(--muted); text-decoration:none; padding:6px 8px; font-size:13px; }
+    .site-nav a:hover, .site-nav a[aria-current] { color:var(--green); text-decoration:underline; text-underline-offset:5px; }
+    main { max-width:1200px; margin:auto; padding:32px 24px 48px; }
+    .hero { display:grid; grid-template-columns:minmax(0, 1fr) auto; align-items:end; gap:24px; background:#163a33; color:white; border-radius:20px; padding:40px; }
+    .hero h1 { font-size:clamp(32px, 5vw, 57px); line-height:1.04; letter-spacing:-.05em; margin:0 0 12px; }
+    .hero p { color:#d3e4da; margin:0; max-width:540px; }
+    .snapshot { font-size:13px; border-left:1px solid #66847a; padding-left:16px; max-width:280px; }
+    .summary { display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin:16px 0 26px; }
+    .summary > div { background:white; padding:17px 20px; border:1px solid var(--line); border-radius:13px; }
+    .summary span, .summary small { display:block; color:var(--muted); }
+    .summary strong { font-size:26px; line-height:1.25; }
+    .panel { background:white; border:1px solid var(--line); border-radius:16px; overflow:hidden; }
+    .toolbar { display:flex; flex-wrap:wrap; align-items:end; justify-content:space-between; gap:14px; padding:18px 20px; }
+    h2 { font-size:22px; margin:0; letter-spacing:-.025em; }
+    #count, #model-status { color:var(--muted); margin:3px 0 0; font-size:13px; }
+    .filters { display:flex; flex-wrap:wrap; gap:10px; }
+    label { display:grid; gap:4px; font-size:12px; font-weight:700; }
+    input, select { max-width:100%; border:1px solid #abbcb4; border-radius:8px; background:white; color:var(--ink); padding:7px 10px; font:inherit; font-size:14px; }
+    .table-wrap { overflow:auto; }
+    table { border-collapse:collapse; text-align:left; width:100%; min-width:780px; }
+    th { color:var(--muted); background:#f2f6f2; font-size:12px; white-space:nowrap; }
+    th, td { padding:12px 15px; border-top:1px solid var(--line); vertical-align:top; }
+    tbody th { color:var(--ink); background:white; font-size:14px; }
+    small { font-size:12px; }
+    td small, tbody th small { display:block; margin-top:4px; color:var(--muted); font-weight:400; }
+    .number { font:13px/1.6 "IBM Plex Mono", monospace; white-space:nowrap; }
+    .pill { display:inline-block; border-radius:6px; padding:3px 8px; white-space:nowrap; font-size:12px; font-weight:700; }
+    .buy { color:#095b3b; background:#dff4e7; }
+    .hold { color:#6c4d0d; background:#fff1d1; }
+    .sell { color:#8f2528; background:#fbe6e5; }
+    .unavailable { color:#445854; background:#edf1ee; }
+    details summary { cursor:pointer; }
+    .review { margin:8px 0 0; max-width:330px; }
+    .review p { margin:4px 0; }
+    .notes { margin:20px 0 0; color:var(--muted); font-size:13px; }
+    .notes p { margin:8px 0; }
+    .notes a { color:var(--green); }
+    @media (max-width:650px) {
+      main { padding:16px 12px 32px; }
+      .hero { grid-template-columns:1fr; padding:24px; gap:18px; }
+      .summary > div { padding:10px; }
+      .summary { gap:6px; }
+      .summary strong { font-size:20px; }
+      .summary small { font-size:11px; }
     }
-
-    h2 {
-      text-align: center;
-    }
-
-    .site-nav{
-      display:flex; gap:6px; flex-wrap:wrap; justify-content:center;
-      padding:10px 14px; margin:-20px -20px 20px;
-      background:#ffffff; border-bottom:1px solid #e3e6eb;
-    }
-    .site-nav a{
-      font-size:12px; padding:6px 12px; border-radius:20px;
-      color:#4b5568; text-decoration:none; background:#f1f3f6; border:1px solid transparent;
-    }
-    .site-nav a:hover{ background:#e8ebf0; color:#2b2f38; }
-    .site-nav a.active{ background:#dbe7fa; color:#2b5a9e; border-color:#c3d8f5; }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background: #ffffff;
-      border: 1px solid #e3e6eb;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    th {
-      background: #eef1f5;
-      padding: 10px;
-    }
-
-    td {
-      padding: 10px;
-      text-align: center;
-      border-bottom: 1px solid #e9ebf0;
-    }
-
-    .buy { color: #1f8a54; font-weight: bold; }
-    .sell { color: #c2453f; font-weight: bold; }
-    .hold { color: #b3781f; }
-
-  
-</style>
+  </style>
+  <script src="portfolio-research.js" defer></script>
 </head>
-
 <body>
+  <nav class="site-nav" aria-label="Site">
+    <a href="index.html">Dashboard</a>
+    <a href="ai.html" aria-current="page">AI insights</a>
+    <a href="funds.html">Mutual funds</a>
+    <a href="charts.html">Charts</a>
+    <a href="news.html">News radar</a>
+    <a href="dependency-map.html">Dependency map</a>
+    <a href="calculators.html">Calculators</a>
+    <a href="holdings_analysis/holdings-analysis.html">Holdings analysis</a>
+  </nav>
+  <main>
+    <header class="hero">
+      <div>
+        <h1>Portfolio Research</h1>
+        <p>Buy, Hold and Sell signals for the portfolio watchlist, with price evidence and independent model opinions when available.</p>
+      </div>
+      <p class="snapshot" id="snapshot" role="status">Loading market snapshot…</p>
+    </header>
 
-<nav class="site-nav">
-  <a href="index.html">Dashboard</a>
-  <a href="ai.html" class="active">AI insights</a>
-  <a href="funds.html">Mutual funds</a>
-  <a href="charts.html">Charts</a>
-  <a href="news.html">News radar</a>
-  <a href="dependency-map.html">Dependency map</a>
-<a href="calculators.html">Calculators</a>
-  <a href="holdings_analysis/holdings-analysis.html">Holdings analysis</a>
-</nav>
+    <section class="summary" aria-label="Watchlist breadth" id="breadth" hidden></section>
 
+    <section class="panel" aria-labelledby="watchlist">
+      <div class="toolbar">
+        <div>
+          <h2 id="watchlist">Portfolio watchlist</h2>
+          <p id="count" role="status">Loading symbols…</p>
+          <p id="model-status"></p>
+        </div>
+        <div class="filters">
+          <label>Search ticker <input id="search" type="search" placeholder="e.g. TCS or NVDA"></label>
+          <label>Technical signal
+            <select id="filter">
+              <option value="">All signals</option>
+              <option value="BUY">Buy</option>
+              <option value="HOLD">Hold</option>
+              <option value="SELL">Sell</option>
+              <option value="Unavailable">Unavailable</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Portfolio signals table">
+        <table>
+          <thead><tr>
+            <th scope="col">Ticker</th><th scope="col">Last price</th>
+            <th scope="col">RSI (14)</th><th scope="col">Vs. 30-day avg.</th>
+            <th scope="col">Technical signal</th><th scope="col">Technical evidence</th>
+            <th scope="col">AI outlook · 2–6 weeks</th>
+          </tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
 
-<h2>🧠 AI Trading Insights</h2>
-
-<h3>🟢 Top BUY Opportunities</h3>
-<table>
-  <thead>
-    <tr>
-      <th>Ticker</th>
-      <th>Score</th>
-      <th>RSI</th>
-      <th>Reasons</th>
-    </tr>
-  </thead>
-  <tbody id="buyTable"></tbody>
-</table>
-
-<h3>🔴 Top SELL Opportunities</h3>
-<table>
-  <thead>
-    <tr>
-      <th>Ticker</th>
-      <th>Score</th>
-      <th>RSI</th>
-      <th>Reasons</th>
-    </tr>
-  </thead>
-  <tbody id="sellTable"></tbody>
-</table>
-
-<h3>📊 All Stocks</h3>
-<table>
-  <thead>
-    <tr>
-      <th>Ticker</th>
-      <th>Price</th>
-      <th>RSI</th>
-      <th>Score</th>
-      <th>Recommendation</th>
-      <th>Reasons</th>
-    </tr>
-  </thead>
-  <tbody id="allTable"></tbody>
-</table>
-
-<script>
-
-async function loadData() {
-  const res = await fetch("./data.json?t=" + Date.now());
-  const data = await res.json();
-
-  const buy = data.filter(d => d.ai_score >= 1).sort((a,b)=>b.ai_score-a.ai_score);
-  const sell = data.filter(d => d.ai_score <= -1).sort((a,b)=>a.ai_score-b.ai_score);
-
-  document.getElementById("buyTable").innerHTML =
-    buy.slice(0,5).map(d => `
-      <tr>
-        <td>${d.ticker}</td>
-        <td class="buy">${d.ai_score}</td>
-        <td>${d.rsi}</td>
-        <td>${d.reasons.join(", ")}</td>
-      </tr>
-    `).join("");
-
-  document.getElementById("sellTable").innerHTML =
-    sell.slice(0,5).map(d => `
-      <tr>
-        <td>${d.ticker}</td>
-        <td class="sell">${d.ai_score}</td>
-        <td>${d.rsi}</td>
-        <td>${d.reasons.join(", ")}</td>
-      </tr>
-    `).join("");
-
-  document.getElementById("allTable").innerHTML =
-    data.map(d => `
-      <tr>
-        <td>${d.ticker}</td>
-        <td>${d.current}</td>
-        <td>${d.rsi}</td>
-        <td>${d.ai_score}</td>
-        <td class="${d.recommendation.includes('BUY') ? 'buy' : d.recommendation.includes('SELL') ? 'sell' : 'hold'}">
-          ${d.recommendation}
-        </td>
-        <td>${d.reasons.join(", ")}</td>
-      </tr>
-    `).join("");
-}
-
-loadData();
-setInterval(loadData, 300000);
-
-</script>
-
+    <section class="notes" aria-label="Research methodology">
+      <p>Technical signals use Yahoo Finance daily closes, 7-, 14- and 30-session moving averages, and RSI. Watchlist breadth counts the symbols above their 30-session average within each listing group.</p>
+      <p>Model opinions use the same price indicators and watchlist breadth. Coverage excludes earnings, company filings, valuation and news. Data can be delayed. Draft research for internal review. Review applicable requirements before distributing recommendations to customers. <a href="https://www.sebi.gov.in/legal/circulars/jul-2025/frequently-asked-questions-faqs-related-to-regulatory-provisions-for-research-analysts_95549.html">SEBI Research Analyst FAQs</a></p>
+    </section>
+  </main>
 </body>
 </html>

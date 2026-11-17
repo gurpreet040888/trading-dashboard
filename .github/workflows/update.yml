@@ -32,9 +32,11 @@ jobs:
         run: |
           python - <<EOF
           import json, csv
+          from datetime import datetime, timezone
           from backend.fetch_data import analyze_stock
   
           results = []
+          snapshot = datetime.now(timezone.utc).isoformat()
   
           with open("stocks.csv") as f:
               reader = csv.DictReader(f)
@@ -62,6 +64,7 @@ jobs:
                       heat = abs(diff7) + abs(diff14)
   
                       data.update({
+                          "snapshot": snapshot,
                           "quantity": qty,
                           "invested": round(invested, 2),
                           "current_value": round(current_value, 2),
@@ -78,12 +81,19 @@ jobs:
               json.dump(results, f, allow_nan=False)
           EOF
 
+      - name: Generate optional AI research
+        if: vars.PORTFOLIO_AI_ENABLED == 'true'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python backend/portfolio_research.py
 
       - name: Commit and push
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add data.json
+          if [ -f portfolio_research.json ]; then git add portfolio_research.json; fi
           git commit -m "Auto update stock data" || exit 0
           git pull --rebase origin main || true
           git push origin HEAD:main
