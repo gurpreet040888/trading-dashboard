@@ -2,7 +2,10 @@ const byId = id => document.getElementById(id);
 const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
 }[char]));
-const stances = { BUY: "Buy", HOLD: "Hold", SELL: "Sell", Unavailable: "Unavailable" };
+const stances = {
+  "STRONG BUY": "Strong Buy", BUY: "Buy", HOLD: "Hold",
+  SELL: "Sell", "STRONG SELL": "Strong Sell", Unavailable: "Unavailable"
+};
 const snapshotAgeLimit = 7 * 24 * 60 * 60 * 1000;
 const dateFormat = new Intl.DateTimeFormat("en-IN", {
   dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Kolkata"
@@ -18,7 +21,9 @@ function listing(ticker) {
 
 function signal(quote) {
   if (!(quote?.current > 0) || !Number.isFinite(quote.ai_score)) return "Unavailable";
+  if (quote.ai_score >= 3) return "STRONG BUY";
   if (quote.ai_score >= 1) return "BUY";
+  if (quote.ai_score <= -3) return "STRONG SELL";
   if (quote.ai_score <= -1) return "SELL";
   return "HOLD";
 }
@@ -29,7 +34,7 @@ function recent(date) {
 }
 
 function pill(stance) {
-  return '<span class="pill ' + stance.toLowerCase() + '">' + stances[stance] + '</span>';
+  return '<span class="pill ' + stance.toLowerCase().replaceAll(" ", "-") + '">' + stances[stance] + '</span>';
 }
 
 function showBreadth(freshSnapshot) {

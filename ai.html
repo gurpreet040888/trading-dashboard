@@ -9,9 +9,10 @@
     :root { color-scheme: light; --ink:#162a2a; --muted:#4f6462; --line:#dae3dd; --paper:#f4f6f2; --green:#116344; }
     * { box-sizing:border-box; }
     body { margin:0; background:var(--paper); color:var(--ink); font:15px/1.5 "DM Sans", sans-serif; }
-    .site-nav { display:flex; flex-wrap:wrap; gap:4px 16px; justify-content:center; background:white; border-bottom:1px solid var(--line); padding:10px 16px; }
-    .site-nav a { color:var(--muted); text-decoration:none; padding:6px 8px; font-size:13px; }
-    .site-nav a:hover, .site-nav a[aria-current] { color:var(--green); text-decoration:underline; text-underline-offset:5px; }
+    .site-nav { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; padding:10px 14px; background:#ffffff; border-bottom:1px solid #e3e6eb; font-family:Arial, sans-serif; line-height:normal; }
+    .site-nav a { font-size:12px; padding:6px 12px; border-radius:20px; color:#4b5568; text-decoration:none; background:#f1f3f6; border:1px solid transparent; }
+    .site-nav a:hover { background:#e8ebf0; color:#2b2f38; }
+    .site-nav a.active { background:#dbe7fa; color:#2b5a9e; border-color:#c3d8f5; }
     main { max-width:1200px; margin:auto; padding:32px 24px 48px; }
     .hero { display:grid; grid-template-columns:minmax(0, 1fr) auto; align-items:end; gap:24px; background:#163a33; color:white; border-radius:20px; padding:40px; }
     .hero h1 { font-size:clamp(32px, 5vw, 57px); line-height:1.04; letter-spacing:-.05em; margin:0 0 12px; }
@@ -38,8 +39,10 @@
     .number { font:13px/1.6 "IBM Plex Mono", monospace; white-space:nowrap; }
     .pill { display:inline-block; border-radius:6px; padding:3px 8px; white-space:nowrap; font-size:12px; font-weight:700; }
     .buy { color:#095b3b; background:#dff4e7; }
+    .strong-buy { color:#ffffff; background:#095b3b; }
     .hold { color:#6c4d0d; background:#fff1d1; }
     .sell { color:#8f2528; background:#fbe6e5; }
+    .strong-sell { color:#ffffff; background:#8f2528; }
     .unavailable { color:#445854; background:#edf1ee; }
     details summary { cursor:pointer; }
     .review { margin:8px 0 0; max-width:330px; }
@@ -61,7 +64,7 @@
 <body>
   <nav class="site-nav" aria-label="Site">
     <a href="index.html">Dashboard</a>
-    <a href="ai.html" aria-current="page">AI insights</a>
+    <a href="ai.html" class="active" aria-current="page">AI insights</a>
     <a href="funds.html">Mutual funds</a>
     <a href="charts.html">Charts</a>
     <a href="news.html">News radar</a>
@@ -73,7 +76,7 @@
     <header class="hero">
       <div>
         <h1>Portfolio Research</h1>
-        <p>Buy, Hold and Sell signals for the portfolio watchlist, with price evidence and independent model opinions when available.</p>
+        <p>Strong Buy, Buy, Hold, Sell and Strong Sell signals for the portfolio watchlist, with price evidence and independent model opinions when available.</p>
       </div>
       <p class="snapshot" id="snapshot" role="status">Loading market snapshot…</p>
     </header>
@@ -92,9 +95,11 @@
           <label>Technical signal
             <select id="filter">
               <option value="">All signals</option>
+              <option value="STRONG BUY">Strong Buy</option>
               <option value="BUY">Buy</option>
               <option value="HOLD">Hold</option>
               <option value="SELL">Sell</option>
+              <option value="STRONG SELL">Strong Sell</option>
               <option value="Unavailable">Unavailable</option>
             </select>
           </label>
@@ -115,6 +120,7 @@
 
     <section class="notes" aria-label="Research methodology">
       <p>Technical signals use Yahoo Finance daily closes, 7-, 14- and 30-session moving averages, and RSI. Watchlist breadth counts the symbols above their 30-session average within each listing group.</p>
+      <p>Technical scores of 3 or higher indicate Strong Buy, 1–2 indicate Buy, 0 indicates Hold, −1 to −2 indicate Sell, and −3 or lower indicate Strong Sell.</p>
       <p>Model opinions use the same price indicators and watchlist breadth. Coverage excludes earnings, company filings, valuation and news. Data can be delayed. Draft research for internal review. Review applicable requirements before distributing recommendations to customers. <a href="https://www.sebi.gov.in/legal/circulars/jul-2025/frequently-asked-questions-faqs-related-to-regulatory-provisions-for-research-analysts_95549.html">SEBI Research Analyst FAQs</a></p>
     </section>
   </main>
