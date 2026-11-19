@@ -121,9 +121,10 @@ tr:hover td{ background:#f8f9fb; }
 #holdingHistory th:first-child, #holdingHistory td:first-child{ position:sticky; left:0; background:#fff; z-index:1; max-width:280px; overflow:hidden; text-overflow:ellipsis; }
 #holdingHistory th:first-child{ background:#eef1f5; z-index:2; }
 #holdingHistory td:nth-child(2), #holdingHistory th:nth-child(2){ text-align:right; }
+#holdingHistory td{ padding:4px 8px; }
 #holdingHistory td.value-up{ background:#e0f2e5; }
 #holdingHistory td.value-down{ background:#fbe3e3; }
-.holding-sparkline{ position:relative; width:160px; height:48px; }
+.holding-sparkline{ position:relative; width:160px; height:28px; }
 
 .pill{
     display:inline-block;
@@ -528,7 +529,7 @@ function renderHoldingHistory(list){
             const colour = current && previous ? (current.total>previous.total ? 'value-up' : 'value-down') : '';
             return `<td class="${colour}">${current ? nf.format(current.total) : '—'}</td>`;
         }).join('');
-        return `<tr><td title="${escape(holding.name)}">${escape(holding.name)}<br><small class="muted">${escape(holding.isin)}</small></td>${cells}<td><div class="holding-sparkline"><canvas id="holdingTrend${index}" role="img" aria-label="Holding value trend for ${escape(holding.name)}. Values are shown in this row."></canvas></div></td></tr>`;
+        return `<tr><td title="${escape(holding.name)} (${escape(holding.isin)})">${escape(holding.name)}</td>${cells}<td><div class="holding-sparkline"><canvas id="holdingTrend${index}" role="img" aria-label="Holding value trend for ${escape(holding.name)}. Values are shown in this row."></canvas></div></td></tr>`;
     }).join('') || `<tr><td colspan="${model.dates.length+2}">No holdings for this type.</td></tr>`;
     holdings.forEach((holding,index)=>{
         holdingHistoryCharts.push(new Chart(document.getElementById('holdingTrend'+index), {
