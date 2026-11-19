@@ -117,6 +117,13 @@ th{ position:sticky; top:0; background:#eef1f5; color:#6b7280; font-size:11px; f
 th:first-child, td:first-child, th:nth-child(2), td:nth-child(2){ text-align:left; }
 tr:last-child td{ border-bottom:none; }
 tr:hover td{ background:#f8f9fb; }
+.history-scroll{ overflow:auto; }
+#holdingHistory th:first-child, #holdingHistory td:first-child{ position:sticky; left:0; background:#fff; z-index:1; max-width:280px; overflow:hidden; text-overflow:ellipsis; }
+#holdingHistory th:first-child{ background:#eef1f5; z-index:2; }
+#holdingHistory td:nth-child(2), #holdingHistory th:nth-child(2){ text-align:right; }
+#holdingHistory td.value-up{ background:#e0f2e5; }
+#holdingHistory td.value-down{ background:#fbe3e3; }
+.holding-sparkline{ position:relative; width:160px; height:48px; }
 
 .pill{
     display:inline-block;
@@ -240,6 +247,17 @@ tr:hover td{ background:#f8f9fb; }
 </div>
 
 <div class="panel">
+  <h2>Holding value by statement date</h2>
+  <p class="legend">Green = increased from the preceding statement. Red = decreased or unchanged. First values and missing comparisons are uncoloured. Values include purchases and price movements.</p>
+  <div class="history-scroll" tabindex="0" role="region" aria-label="Holding value history">
+    <table id="holdingHistory">
+      <thead id="holdingHistoryHead"></thead>
+      <tbody id="holdingHistoryRows"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="panel">
   <h2>Holding-level performance</h2>
   <div class="legend">
     <span>XIRR from statement history only</span>
@@ -260,6 +278,7 @@ tr:hover td{ background:#f8f9fb; }
 
 let model, typeFilter = 'ALL';
 let trendChart;
+let holdingHistoryCharts = [];
 
 const nf = new Intl.NumberFormat('en-IN', { style:'currency', currency:'INR', maximumFractionDigits:0 });
 const pf = new Intl.NumberFormat('en-IN', { maximumFractionDigits:1 });
@@ -494,6 +513,42 @@ function renderCharts(mom){
         : '';
 }
 
+function renderHoldingHistory(list){
+    holdingHistoryCharts.forEach(chart=>chart.destroy());
+    holdingHistoryCharts = [];
+    const escape = text=>String(text).replace(/[&<>"']/g, char=>({
+        '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+    }[char]));
+    const holdings = [...list].sort((a,b)=>a.name.localeCompare(b.name));
+    document.getElementById('holdingHistoryHead').innerHTML = `<tr><th scope="col">Holding</th>${model.dates.map(date=>`<th scope="col">${escape(date)}</th>`).join('')}<th scope="col">Value trend</th></tr>`;
+    document.getElementById('holdingHistoryRows').innerHTML = holdings.map((holding,index)=>{
+        const cells = model.dates.map((date,dateIndex)=>{
+            const current = model.grouped.get(holding.isin+'|'+date);
+            const previous = dateIndex ? model.grouped.get(holding.isin+'|'+model.dates[dateIndex-1]) : null;
+            const colour = current && previous ? (current.total>previous.total ? 'value-up' : 'value-down') : '';
+            return `<td class="${colour}">${current ? nf.format(current.total) : '—'}</td>`;
+        }).join('');
+        return `<tr><td title="${escape(holding.name)}">${escape(holding.name)}<br><small class="muted">${escape(holding.isin)}</small></td>${cells}<td><div class="holding-sparkline"><canvas id="holdingTrend${index}" role="img" aria-label="Holding value trend for ${escape(holding.name)}. Values are shown in this row."></canvas></div></td></tr>`;
+    }).join('') || `<tr><td colspan="${model.dates.length+2}">No holdings for this type.</td></tr>`;
+    holdings.forEach((holding,index)=>{
+        holdingHistoryCharts.push(new Chart(document.getElementById('holdingTrend'+index), {
+            type:'line',
+            data:{ labels:model.dates, datasets:[{
+                label:'Holding value',
+                data:model.dates.map(date=>model.grouped.get(holding.isin+'|'+date)?.total ?? null),
+                borderColor:'#2a5d9f', borderWidth:2, pointRadius:1.5,
+                pointHoverRadius:4, fill:false, tension:0, spanGaps:false
+            }] },
+            options:{
+                responsive:true, maintainAspectRatio:false, animation:false,
+                interaction:{mode:'index',intersect:false},
+                plugins:{legend:{display:false},tooltip:{callbacks:{label:context=>nf.format(context.parsed.y)}}},
+                scales:{x:{display:false}, y:{display:false}}
+            }
+        }));
+    });
+}
+
 function render(){
 
     const list = filteredList();
@@ -538,6 +593,7 @@ function render(){
     `;
 
     renderCharts(mom);
+    renderHoldingHistory(list);
 
     document.getElementById('momTable').innerHTML = mom.map((m,i) => {
         const prev = mom[i-1];
