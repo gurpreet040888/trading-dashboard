@@ -24,6 +24,16 @@ let holdingMarketRequest;
 let detailPriceChart;
 let detailStatementChart;
 
+function holdingMarketMetrics(holding){
+    const quote = holdingQuotes.get(holdingTickers[holding.isin]);
+    const cmp = Number.isFinite(quote?.current) && quote.current>0 ? quote.current : null;
+    const average = Number.isFinite(quote?.buy_price) && quote.buy_price>0 ? quote.buy_price : null;
+    return {
+        cmp, average, date:quote?.price_date || 'Unavailable',
+        gain:cmp!=null && average!=null ? (cmp-average)*holding.qty : null
+    };
+}
+
 function updateHoldingDetail(list){
     const select = document.getElementById('holdingSelect');
     const previous = select.value;
@@ -54,7 +64,10 @@ async function loadHoldingMarketData(){
         holdingPrices = prices.status==='fulfilled' && prices.value && typeof prices.value==='object' ? prices.value : {};
         holdingMarketState = quotes.status==='rejected' || prices.status==='rejected'
             ? 'Some market data could not be loaded. Reload the page to retry.' : '';
-        if(model) renderHoldingDetail();
+        if(model){
+            renderHoldingHistory(filteredList());
+            renderHoldingDetail();
+        }
     })();
     return holdingMarketRequest;
 }
@@ -72,6 +85,7 @@ function renderHoldingDetail(){
     }
     const ticker = holdingTickers[holding.isin];
     const quote = holdingQuotes.get(ticker);
+    const market = holdingMarketMetrics(holding);
     const suggestion = signal(holding);
     const score = quote?.ai_score;
     const technical = !(quote?.current>0) || !Number.isFinite(score) ? 'Unavailable' :
@@ -85,6 +99,10 @@ function renderHoldingDetail(){
         ['Latest statement',holding.dateText],
         ['Holding value',nf.format(holding.total)],
         ['Quantity',quantityFormat.format(holding.qty)],
+        ['CMP',market.cmp==null ? 'Unavailable' : priceFormat.format(market.cmp)],
+        ['Average Price',market.average==null ? 'Unavailable' : priceFormat.format(market.average)],
+        ['Absolute gain/loss',market.gain==null ? 'Unavailable' : nf.format(market.gain)],
+        ['Gain/loss basis','Latest quote × latest statement quantity, less portfolio buy price × that quantity'],
         ['Estimated XIRR',holding.xirr==null ? 'Insufficient history' : (holding.xirr*100).toFixed(1)+'%'],
         ['AI suggestion',suggestion.label],
         ['Suggestion evidence',suggestion.reason],

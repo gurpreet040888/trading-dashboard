@@ -122,21 +122,28 @@ tr:hover td{ background:#f8f9fb; }
 #holdingHistory th, #holdingHistory td{ min-width:105px; width:105px; box-sizing:border-box; }
 #holdingHistory th:first-child, #holdingHistory td:first-child{ position:sticky; left:0; background:#fff; z-index:2; width:205px; min-width:205px; max-width:205px; overflow:hidden; text-overflow:ellipsis; }
 #holdingHistory th:nth-child(2), #holdingHistory td:nth-child(2){ position:sticky; left:205px; background:#fff; z-index:2; width:80px; min-width:80px; text-align:right; box-shadow:2px 0 3px rgba(0,0,0,.08); }
-#holdingHistory th:first-child, #holdingHistory th:nth-child(2){ background:#eef1f5; z-index:3; }
-#holdingHistory th:last-child, #holdingHistory td:last-child{ width:180px; min-width:180px; }
+#holdingHistory th:nth-child(3), #holdingHistory td:nth-child(3){ position:sticky; left:285px; background:#fff; z-index:2; width:85px; min-width:85px; }
+#holdingHistory th:nth-child(4), #holdingHistory td:nth-child(4){ position:sticky; left:370px; background:#fff; z-index:2; width:115px; min-width:115px; box-shadow:2px 0 3px rgba(0,0,0,.08); }
+#holdingHistory th:nth-child(-n+4){ background:#eef1f5; z-index:3; }
+#holdingHistory th:last-child, #holdingHistory td:last-child{ width:100px; min-width:100px; }
 #holdingHistory td{ padding:4px 8px; }
 #holdingHistory .statement-value{ display:block; font-size:11px; line-height:15px; }
 #holdingHistory .statement-qty{ display:block; font-size:9px; line-height:11px; color:#596273; }
+#holdingHistory .statement-subrow{ display:flex; justify-content:space-between; gap:5px; font-size:9px; line-height:11px; color:#596273; }
 #holdingHistory td.value-up{ background:#e0f2e5; }
 #holdingHistory td.value-down{ background:#fbe3e3; }
-.holding-sparkline{ position:relative; width:160px; height:28px; }
-.detail-charts{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; margin-top:18px; }
-.detail-chart{ position:relative; height:260px; }
+.holding-sparkline{ position:relative; width:80px; height:14px; }
+.portfolio-chart{ position:relative; height:115px; }
+.statement-layout{ display:grid; grid-template-columns:minmax(0,2fr) minmax(240px,1fr); gap:20px; }
+.statement-layout > div{ min-width:0; overflow:auto; }
+.holding-detail-layout{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.2fr); gap:24px; }
+.detail-charts{ display:grid; grid-template-columns:minmax(0,1fr); gap:20px; }
+.detail-chart{ position:relative; height:200px; }
 #holdingSelect{ max-width:100%; margin-bottom:12px; }
 #holdingSummary{ white-space:normal; }
 #holdingSummary th{ position:static; text-align:left; width:150px; }
 #holdingSummary td{ text-align:left; }
-@media(max-width:900px){ .detail-charts{ grid-template-columns:1fr; } }
+@media(max-width:900px){ .holding-detail-layout, .statement-layout{ grid-template-columns:1fr; } }
 
 .pill{
     display:inline-block;
@@ -231,7 +238,7 @@ tr:hover td{ background:#f8f9fb; }
 <div class="dashboard-top">
   <div class="panel">
     <h2>Portfolio trend — value &amp; quantity, month over month</h2>
-    <canvas id="trendChart" height="230"></canvas>
+    <div class="portfolio-chart"><canvas id="trendChart"></canvas></div>
     <p class="muted" id="qtyNote" style="font-size:11px;margin:8px 0 0;"></p>
   </div>
   <div class="sidebar">
@@ -243,25 +250,27 @@ tr:hover td{ background:#f8f9fb; }
   </div>
 </div>
 
-<div class="panel">
+<div class="panel statement-layout">
+  <div>
   <h2>Month-over-month detail</h2>
   <table>
     <thead><tr><th>Statement date</th><th>Value</th><th>Δ Value</th><th>Total qty/units</th><th>Δ Qty</th><th># Holdings</th></tr></thead>
     <tbody id="momTable"></tbody>
   </table>
-</div>
-
-<div class="panel">
+  </div>
+  <div>
   <h2>Allocation at latest statement</h2>
   <table>
     <thead><tr><th>Type</th><th>Value</th><th>Weight</th></tr></thead>
     <tbody id="allocation"></tbody>
   </table>
+  </div>
 </div>
 
 <div class="panel">
   <h2>Holding value by statement date</h2>
   <p class="legend">Green = increased from the preceding statement. Red = decreased or unchanged. First values and missing comparisons are uncoloured. Values include purchases and price movements.</p>
+  <p class="legend">Each date shows value above statement unit price (left) and quantity (right). CMP uses the latest available quote. Absolute gain/loss uses that quote, the portfolio buy price and latest statement quantity. Hover over CMP for the quote date.</p>
   <div class="history-scroll" tabindex="0" role="region" aria-label="Holding value history">
     <table id="holdingHistory">
       <thead id="holdingHistoryHead"></thead>
@@ -287,11 +296,15 @@ tr:hover td{ background:#f8f9fb; }
   <h2 id="holdingDetailTitle">Holding detail</h2>
   <label for="holdingSelect">Choose a holding / ticker</label>
   <br><select id="holdingSelect"></select>
+  <div class="holding-detail-layout">
+  <div>
   <table id="holdingSummary" aria-label="Selected holding summary"><tbody></tbody></table>
   <p class="legend">XIRR is estimated from statement snapshots. AI suggestion uses the same holding-performance rules as the table above. Technical signals use the AI Insights quote snapshot.</p>
+  </div>
   <div class="detail-charts">
     <div><h2>Share price history</h2><p class="muted" id="priceHistoryStatus"></p><div class="detail-chart"><canvas id="holdingPriceChart"></canvas></div></div>
     <div><h2>Statement value &amp; quantity</h2><div class="detail-chart"><canvas id="holdingStatementChart"></canvas></div></div>
+  </div>
   </div>
 </section>
 
@@ -308,6 +321,7 @@ let holdingHistoryCharts = [];
 const nf = new Intl.NumberFormat('en-IN', { style:'currency', currency:'INR', maximumFractionDigits:0 });
 const pf = new Intl.NumberFormat('en-IN', { maximumFractionDigits:1 });
 const quantityFormat = new Intl.NumberFormat('en-IN', { maximumFractionDigits:6 });
+const priceFormat = new Intl.NumberFormat('en-IN', { style:'currency', currency:'INR', minimumFractionDigits:2, maximumFractionDigits:2 });
 
 function typeLabel(t){ return t==='S' ? 'Stocks' : t==='MF' ? 'Mutual funds' : 'ETFs / others'; }
 
@@ -525,6 +539,7 @@ function renderCharts(mom){
             ]
         },
         options:{
+            maintainAspectRatio:false,
             interaction:{ mode:'index', intersect:false },
             plugins:{ legend:{ display:true, position:'top', labels:{ boxWidth:12, font:{size:11} } } },
             scales:{
@@ -546,18 +561,20 @@ function renderHoldingHistory(list){
         '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
     }[char]));
     const holdings = [...list].sort((a,b)=>a.name.localeCompare(b.name));
-    document.getElementById('holdingHistoryHead').innerHTML = `<tr><th scope="col">Holding</th><th scope="col">Est. XIRR</th>${model.dates.map(date=>`<th scope="col">${escape(date)}</th>`).join('')}<th scope="col">Value trend</th></tr>`;
+    document.getElementById('holdingHistoryHead').innerHTML = `<tr><th scope="col">Holding</th><th scope="col">Est. XIRR</th><th scope="col">CMP</th><th scope="col">Abs. gain/loss</th>${model.dates.map(date=>`<th scope="col">${escape(date)}</th>`).join('')}<th scope="col">Value trend</th></tr>`;
     document.getElementById('holdingHistoryRows').innerHTML = holdings.map((holding,index)=>{
         const cells = model.dates.map((date,dateIndex)=>{
             const current = model.grouped.get(holding.isin+'|'+date);
             const previous = dateIndex ? model.grouped.get(holding.isin+'|'+model.dates[dateIndex-1]) : null;
             const colour = current && previous ? (current.total>previous.total ? 'value-up' : 'value-down') : '';
-            return `<td class="${colour}">${current ? `<span class="statement-value">${nf.format(current.total)}</span><span class="statement-qty">Qty ${quantityFormat.format(current.qty)}</span>` : '—'}</td>`;
+            return `<td class="${colour}">${current ? `<span class="statement-value">${nf.format(current.total)}</span><span class="statement-subrow"><span title="Statement unit price">${current.qty>0 ? priceFormat.format(current.total/current.qty) : '—'}</span><span title="Quantity">${quantityFormat.format(current.qty)}</span></span>` : '—'}</td>`;
         }).join('');
         const shortName = holding.name.length>25 ? holding.name.slice(0,24)+'…' : holding.name;
         const xirrText = holding.xirr==null ? '—' : (holding.xirr*100).toFixed(1)+'%';
-        return `<tr><td title="${escape(holding.name)} (${escape(holding.isin)})">${escape(shortName)}</td><td class="${holding.xirr==null?'muted':holding.xirr>=0?'positive':'negative'}">${xirrText}</td>${cells}<td><div class="holding-sparkline"><canvas id="holdingTrend${index}" role="img" aria-label="Holding value trend for ${escape(holding.name)}. Values are shown in this row."></canvas></div></td></tr>`;
-    }).join('') || `<tr><td colspan="${model.dates.length+3}">No holdings for this type.</td></tr>`;
+        const market = holdingMarketMetrics(holding);
+        const gainClass = market.gain==null ? 'muted' : market.gain>=0 ? 'positive' : 'negative';
+        return `<tr><td title="${escape(holding.name)} (${escape(holding.isin)})">${escape(shortName)}</td><td class="${holding.xirr==null?'muted':holding.xirr>=0?'positive':'negative'}">${xirrText}</td><td title="Quote date: ${escape(market.date)}">${market.cmp==null?'—':priceFormat.format(market.cmp)}</td><td class="${gainClass}">${market.gain==null?'—':nf.format(market.gain)}</td>${cells}<td><div class="holding-sparkline"><canvas id="holdingTrend${index}" role="img" aria-label="Holding value trend for ${escape(holding.name)}. Values are shown in this row."></canvas></div></td></tr>`;
+    }).join('') || `<tr><td colspan="${model.dates.length+5}">No holdings for this type.</td></tr>`;
     holdings.forEach((holding,index)=>{
         holdingHistoryCharts.push(new Chart(document.getElementById('holdingTrend'+index), {
             type:'line',
