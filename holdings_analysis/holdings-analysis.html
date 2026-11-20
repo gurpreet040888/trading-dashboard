@@ -571,7 +571,9 @@ function renderHoldingHistory(list){
         }).join('');
         const shortName = holding.name.length>25 ? holding.name.slice(0,24)+'…' : holding.name;
         const xirrText = holding.xirr==null ? '—' : (holding.xirr*100).toFixed(1)+'%';
-        const market = holdingMarketMetrics(holding);
+        const market = typeof holdingMarketMetrics==='function'
+            ? holdingMarketMetrics(holding)
+            : {cmp:null, gain:null, date:'Market data unavailable'};
         const gainClass = market.gain==null ? 'muted' : market.gain>=0 ? 'positive' : 'negative';
         return `<tr><td title="${escape(holding.name)} (${escape(holding.isin)})">${escape(shortName)}</td><td class="${holding.xirr==null?'muted':holding.xirr>=0?'positive':'negative'}">${xirrText}</td><td title="Quote date: ${escape(market.date)}">${market.cmp==null?'—':priceFormat.format(market.cmp)}</td><td class="${gainClass}">${market.gain==null?'—':nf.format(market.gain)}</td>${cells}<td><div class="holding-sparkline"><canvas id="holdingTrend${index}" role="img" aria-label="Holding value trend for ${escape(holding.name)}. Values are shown in this row."></canvas></div></td></tr>`;
     }).join('') || `<tr><td colspan="${model.dates.length+5}">No holdings for this type.</td></tr>`;
@@ -639,7 +641,7 @@ function render(){
 
     renderCharts(mom);
     renderHoldingHistory(list);
-    updateHoldingDetail(list);
+    if(typeof updateHoldingDetail==='function') updateHoldingDetail(list);
 
     document.getElementById('momTable').innerHTML = mom.map((m,i) => {
         const prev = mom[i-1];
@@ -689,7 +691,8 @@ function loadDefault(){
     fetch('SOH.txt')
         .then(function(r){ if(!r.ok) throw new Error(); return r.text(); })
         .then(function(text){ setData(text); })
-        .catch(function(){
+        .catch(function(error){
+            console.error('Holdings load or render failed', error);
             document.getElementById('subtitle').textContent = 'Could not load SOH.txt.';
             document.getElementById('status').textContent = 'Make sure this page is served over http(s) (e.g. GitHub Pages) and SOH.txt sits in the same folder.';
         });
@@ -698,7 +701,7 @@ function loadDefault(){
 function setData(text){
     model = build(parse(text));
     render();
-    loadHoldingMarketData();
+    if(typeof loadHoldingMarketData==='function') loadHoldingMarketData();
     document.getElementById('status').textContent = `Loaded ${model.list.length} ISINs from ${model.dates.length} statement dates.`;
 }
 
@@ -748,6 +751,6 @@ document.getElementById('pwInput').addEventListener('keydown', function(e){
 });
 
 </script>
-<script src="holding-detail.js"></script>
+<script src="holding-detail.js?v=20261120-2" onerror="document.getElementById('priceHistoryStatus').textContent='Holding detail could not load. Refresh the page to retry.';"></script>
 </body>
 </html>
